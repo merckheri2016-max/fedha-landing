@@ -187,7 +187,7 @@
         logout:<Fragment><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Fragment>,
         target:<Fragment><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></Fragment>,
         download:<Fragment><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Fragment>,
-        alert:<Fragment><path d="M10.29 3.86L1.82 18a index.html2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Fragment>,
+        alert:<Fragment><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Fragment>,
         loans:<Fragment><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></Fragment>,
         trending:<Fragment><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></Fragment>,
       };
@@ -929,7 +929,7 @@
 
       const loadAllData=useCallback(async(uid)=>{
         try{
-          const [prof,sub,incomes,expenses,budgets,savings_goals,investments,loans,notifications]=await Promise.all([
+          const [prof,sub,incomes,expenses,budgets,savings_goals,investments,notifications]=await Promise.all([
             db.getProfile(uid),
             db.getSubscription(uid),
             db.getAll('incomes',uid),
@@ -937,9 +937,12 @@
             db.getAll('budgets',uid),
             db.getAll('savings_goals',uid),
             db.getAll('investments',uid),
-            db.getAll('loans',uid),
             db.getAll('notifications',uid),
           ]);
+          // Load loans separately to handle if table doesn't exist
+          let loans = [];
+          try { loans = await db.getAll('loans',uid); } catch(e) { console.log('Loans table not ready:', e.message); }
+
           setProfile(prof||{name:"",email:"",currency:"TZS"});
           setSubscription(sub);
           setData({incomes,expenses,budgets,savings_goals,investments,loans,notifications});
