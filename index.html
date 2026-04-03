@@ -1,836 +1,569 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#0B0E11" />
-  <meta name="description" content="Fedha - Personal Finance Management System" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Fedha" />
-  <title>Fedha - Personal Finance</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5"/>
+  <meta name="theme-color" content="#0B0E11"/>
+  <meta name="description" content="Fedha - Take control of your money. Track income, expenses, budgets, savings and investments all in one place."/>
+  <meta property="og:title" content="Fedha - Personal Finance Made Simple"/>
+  <meta property="og:description" content="Track your money, grow your savings, and reach your financial goals. Built for everyone."/>
+  <meta property="og:type" content="website"/>
+  <title>Fedha - Personal Finance Made Simple</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0B0E11; font-family: 'DM Sans', sans-serif; }
-    #root { min-height: 100vh; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #141820; }
-    ::-webkit-scrollbar-thumb { background: #252D3D; border-radius: 3px; }
-    input, select, textarea { font-family: 'DM Sans', sans-serif; }
-    table { border-spacing: 0; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg: #0B0E11; --surface: #141820; --card: #161C28; --border: #252D3D;
+      --accent: #00D4AA; --accent-dim: rgba(0,212,170,0.12); --accent-glow: rgba(0,212,170,0.25);
+      --warn: #FF6B6B; --orange: #FFB347; --blue: #5B9FFF; --purple: #B388FF;
+      --text: #E8ECF4; --text-muted: #8892A8; --text-dim: #5A6478;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+    
+    /* Animated gradient background */
+    .hero-bg {
+      position: absolute; top: 0; left: 0; right: 0; height: 100vh; overflow: hidden; z-index: 0;
+    }
+    .hero-bg::before {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(ellipse at 30% 20%, rgba(0,212,170,0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 70% 60%, rgba(91,159,255,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 50% 80%, rgba(179,136,255,0.05) 0%, transparent 50%);
+      animation: drift 20s ease-in-out infinite;
+    }
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(2%, -2%) rotate(1deg); }
+      66% { transform: translate(-1%, 1%) rotate(-0.5deg); }
+    }
+
+    /* Grid pattern overlay */
+    .grid-pattern {
+      position: absolute; top: 0; left: 0; right: 0; height: 100vh;
+      background-image: linear-gradient(rgba(37,45,61,0.3) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(37,45,61,0.3) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 70%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(11,14,17,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(37,45,61,0.5);
+    }
+    .logo { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 800; color: var(--accent); letter-spacing: -1px; text-decoration: none; }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent); color: #0B0E11; padding: 12px 28px; border-radius: 12px;
+      font-size: 15px; font-weight: 700; text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.3s; font-family: 'DM Sans', sans-serif;
+      box-shadow: 0 0 20px rgba(0,212,170,0.2);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,212,170,0.35); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: var(--text); padding: 12px 28px; border-radius: 12px;
+      font-size: 15px; font-weight: 600; text-decoration: none; border: 1px solid var(--border);
+      transition: all 0.3s; font-family: 'DM Sans', sans-serif; cursor: pointer;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .nav-cta { padding: 10px 22px; font-size: 14px; }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;
+      padding: 120px 24px 80px; position: relative;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-dim); border: 1px solid rgba(0,212,170,0.2); border-radius: 50px;
+      padding: 8px 20px; font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 28px;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .hero h1 {
+      font-size: clamp(36px, 7vw, 68px); font-weight: 800; line-height: 1.08;
+      margin-bottom: 24px; letter-spacing: -2px;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--blue) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p { font-size: 18px; color: var(--text-muted); max-width: 540px; margin: 0 auto 40px; line-height: 1.7; }
+    .hero-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .hero-stats {
+      display: flex; gap: 40px; justify-content: center; margin-top: 60px; flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; color: var(--accent); }
+    .hero-stat .label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+    /* Floating cards animation */
+    .floating-cards {
+      margin-top: 80px; position: relative; height: 200px; max-width: 600px; margin-left: auto; margin-right: auto;
+    }
+    .float-card {
+      position: absolute; background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px 24px; animation: float 6s ease-in-out infinite;
+    }
+    .float-card:nth-child(1) { left: 0; top: 20px; animation-delay: 0s; }
+    .float-card:nth-child(2) { right: 0; top: 0; animation-delay: 2s; }
+    .float-card:nth-child(3) { left: 50%; transform: translateX(-50%); top: 100px; animation-delay: 4s; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); }
+    }
+    .float-card .fc-label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+    .float-card .fc-value { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; }
+    .fc-green { color: var(--accent); }
+    .fc-red { color: var(--warn); }
+    .fc-blue { color: var(--blue); }
+
+    /* Section styling */
+    section { padding: 100px 0; }
+    .section-label {
+      font-size: 13px; font-weight: 700; color: var(--accent); text-transform: uppercase;
+      letter-spacing: 2px; margin-bottom: 12px;
+    }
+    .section-title { font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+    .section-desc { font-size: 16px; color: var(--text-muted); max-width: 560px; line-height: 1.7; }
+
+    /* Features */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px; margin-top: 50px;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      padding: 32px; transition: all 0.3s;
+    }
+    .feature-card:hover { border-color: rgba(0,212,170,0.3); transform: translateY(-4px); }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center;
+      justify-content: center; margin-bottom: 20px; font-size: 22px;
+    }
+    .feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+    /* How it works */
+    .steps { display: flex; gap: 24px; margin-top: 50px; flex-wrap: wrap; }
+    .step {
+      flex: 1; min-width: 220px; text-align: center; padding: 32px 20px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      position: relative;
+    }
+    .step-num {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--accent-dim);
+      border: 2px solid var(--accent); color: var(--accent); font-family: 'Space Mono', monospace;
+      font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    /* Pricing */
+    .pricing-card {
+      max-width: 440px; margin: 50px auto 0; background: var(--card); border: 2px solid var(--accent);
+      border-radius: 24px; padding: 44px; text-align: center; position: relative; overflow: hidden;
+    }
+    .pricing-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--blue), var(--purple));
+    }
+    .pricing-popular {
+      display: inline-block; background: var(--accent); color: #0B0E11; padding: 4px 16px;
+      border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 20px;
+    }
+    .pricing-name { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .pricing-price {
+      font-family: 'Space Mono', monospace; font-size: 48px; font-weight: 700; color: var(--accent);
+      margin: 20px 0 4px;
+    }
+    .pricing-price span { font-size: 16px; color: var(--text-muted); font-weight: 400; }
+    .pricing-period { font-size: 14px; color: var(--text-dim); margin-bottom: 28px; }
+    .pricing-features { list-style: none; text-align: left; margin-bottom: 32px; }
+    .pricing-features li {
+      padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+      color: var(--text-muted); display: flex; align-items: center; gap: 10px;
+    }
+    .pricing-features li::before {
+      content: '✓'; color: var(--accent); font-weight: 700; font-size: 16px;
+    }
+    .pricing-card .btn-primary { width: 100%; justify-content: center; padding: 14px; font-size: 16px; }
+    .pricing-methods {
+      margin-top: 20px; font-size: 13px; color: var(--text-dim);
+    }
+
+    /* Testimonials */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 50px; }
+    .testimonial {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 28px;
+    }
+    .testimonial-text { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .testimonial-avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-weight: 700; font-size: 16px; color: #0B0E11;
+    }
+    .testimonial-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .testimonial-role { font-size: 12px; color: var(--text-dim); }
+
+    /* FAQ */
+    .faq-list { max-width: 700px; margin: 50px auto 0; }
+    .faq-item {
+      border-bottom: 1px solid var(--border); padding: 20px 0; cursor: pointer;
+    }
+    .faq-question {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 16px; font-weight: 600; color: var(--text);
+    }
+    .faq-arrow { font-size: 20px; color: var(--text-dim); transition: transform 0.3s; }
+    .faq-answer {
+      font-size: 14px; color: var(--text-muted); line-height: 1.7; padding-top: 12px;
+      max-height: 0; overflow: hidden; transition: max-height 0.3s, padding 0.3s;
+    }
+    .faq-item.open .faq-answer { max-height: 200px; }
+    .faq-item.open .faq-arrow { transform: rotate(45deg); }
+
+    /* CTA */
+    .cta-section {
+      text-align: center; padding: 100px 0; position: relative;
+    }
+    .cta-box {
+      background: linear-gradient(135deg, rgba(0,212,170,0.08) 0%, rgba(91,159,255,0.08) 100%);
+      border: 1px solid rgba(0,212,170,0.2); border-radius: 28px; padding: 60px 40px;
+    }
+    .cta-box h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
+    .cta-box p { font-size: 16px; color: var(--text-muted); max-width: 500px; margin: 0 auto 32px; line-height: 1.7; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border); padding: 40px 0; text-align: center;
+    }
+    .footer-links { display: flex; gap: 24px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-copy { font-size: 13px; color: var(--text-dim); }
+
+    /* Mobile menu */
+    .mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+    .nav-links-mobile {
+      display: none; position: fixed; top: 60px; left: 0; right: 0; background: var(--surface);
+      border-bottom: 1px solid var(--border); padding: 20px 24px; flex-direction: column; gap: 16px; z-index: 99;
+    }
+    .nav-links-mobile.open { display: flex; }
+    .nav-links-mobile a { color: var(--text-muted); text-decoration: none; font-size: 16px; padding: 8px 0; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .mobile-menu-btn { display: block; }
+      .hero h1 { letter-spacing: -1px; }
+      .hero-stats { gap: 24px; }
+      .floating-cards { display: none; }
+      .steps { flex-direction: column; }
+      .float-card:nth-child(3) { left: 10%; transform: none; }
+    }
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-  <script type="text/babel">
-    const { useState, useEffect, useCallback, useRef, Fragment } = React;
 
-    const COLORS = {
-      bg: "#0B0E11", surface: "#141820", surfaceHover: "#1A2030",
-      card: "#161C28", cardAlt: "#1C2333", border: "#252D3D", borderLight: "#2A3548",
-      accent: "#00D4AA", accentDim: "rgba(0,212,170,0.12)", accentGlow: "rgba(0,212,170,0.25)",
-      warn: "#FF6B6B", warnDim: "rgba(255,107,107,0.12)",
-      orange: "#FFB347", orangeDim: "rgba(255,179,71,0.12)",
-      blue: "#5B9FFF", blueDim: "rgba(91,159,255,0.12)",
-      purple: "#B388FF", purpleDim: "rgba(179,136,255,0.12)",
-      text: "#E8ECF4", textMuted: "#8892A8", textDim: "#5A6478",
-    };
+  <!-- Navigation -->
+  <nav>
+    <a href="#" class="logo">Fedha</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary nav-cta">Get Started</a>
+    </div>
+    <button class="mobile-menu-btn" onclick="document.getElementById('mobileMenu').classList.toggle('open')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8892A8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </nav>
+  <div class="nav-links-mobile" id="mobileMenu">
+    <a href="#features" onclick="document.getElementById('mobileMenu').classList.remove('open')">Features</a>
+    <a href="#how-it-works" onclick="document.getElementById('mobileMenu').classList.remove('open')">How It Works</a>
+    <a href="#pricing" onclick="document.getElementById('mobileMenu').classList.remove('open')">Pricing</a>
+    <a href="#faq" onclick="document.getElementById('mobileMenu').classList.remove('open')">FAQ</a>
+    <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary" style="text-align:center" onclick="document.getElementById('mobileMenu').classList.remove('open')">Get Started</a>
+  </div>
 
-    const EXPENSE_CATEGORIES = ["Food","Transport","Rent","Bills","Savings","Investment","Business","Church","Entertainment","Emergencies","Health","Education","Other"];
-    const INCOME_SOURCES = ["Salary","Business","Side Hustle","Gifts","Commissions","Freelance","Interest","Other"];
-    const PAYMENT_METHODS = ["Cash","Bank Transfer","Mobile Money","Card","Cheque","Other"];
-    const INVESTMENT_TYPES = ["Shares","Mutual Funds","Bonds","Fixed Deposits","Business Investment","Land/Property","Other"];
+  <!-- Hero -->
+  <div class="hero-bg"></div>
+  <div class="grid-pattern"></div>
 
-    const STORAGE_KEY = "pf_data_v2";
-    const fmt = (n) => (Number(n)||0).toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:0});
-    const fmtDate = (d) => new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-    const today = () => new Date().toISOString().split("T")[0];
-    const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-    const currentMonth = () => new Date().toISOString().slice(0,7);
-
-    const defaultUser = () => ({name:"",email:"",currency:"TZS",pin:""});
-    const defaultData = () => ({user:defaultUser(),registered:false,incomes:[],expenses:[],budgets:{},savingsGoals:[],investments:[],notifications:[]});
-
-    const loadData = () => { try { const s=localStorage.getItem(STORAGE_KEY); if(s) return JSON.parse(s); } catch(e){} return null; };
-    const saveData = (data) => { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); } catch(e){} };
-
-    const Icon = ({name,size=20,color=COLORS.textMuted}) => {
-      const icons = {
-        dashboard: <Fragment><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></Fragment>,
-        income: <Fragment><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></Fragment>,
-        expense: <Fragment><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></Fragment>,
-        budget: <Fragment><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="12" y1="10" x2="12" y2="20"/></Fragment>,
-        savings: <Fragment><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 4 3 7 7 8V22h4v-2h1c2 0 3-1 3-3s-1-3-3-3H16v-2c2 0 3-1 3-3V5z"/></Fragment>,
-        invest: <Fragment><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></Fragment>,
-        reports: <Fragment><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></Fragment>,
-        profile: <Fragment><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></Fragment>,
-        plus: <Fragment><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Fragment>,
-        close: <Fragment><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Fragment>,
-        check: <Fragment><polyline points="20 6 9 17 4 12"/></Fragment>,
-        trash: <Fragment><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></Fragment>,
-        bell: <Fragment><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></Fragment>,
-        edit: <Fragment><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></Fragment>,
-        logout: <Fragment><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Fragment>,
-        target: <Fragment><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></Fragment>,
-        calendar: <Fragment><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></Fragment>,
-        filter: <Fragment><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></Fragment>,
-        download: <Fragment><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Fragment>,
-        alert: <Fragment><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Fragment>,
-      };
-      return (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icons[name]||null}</svg>);
-    };
-
-    const btnBase = {border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontWeight:600,borderRadius:10,transition:"all 0.2s"};
-
-    const Btn = ({children,onClick,variant="primary",style={},disabled}) => {
-      const vars = {
-        primary:{background:COLORS.accent,color:"#0B0E11",padding:"10px 22px",fontSize:14},
-        secondary:{background:COLORS.surfaceHover,color:COLORS.text,padding:"10px 22px",fontSize:14,border:"1px solid "+COLORS.border},
-        danger:{background:COLORS.warnDim,color:COLORS.warn,padding:"8px 16px",fontSize:13},
-        ghost:{background:"transparent",color:COLORS.textMuted,padding:"8px 14px",fontSize:13},
-        small:{background:COLORS.accentDim,color:COLORS.accent,padding:"6px 14px",fontSize:12},
-      };
-      return (<button onClick={onClick} disabled={disabled} style={{...btnBase,...vars[variant],opacity:disabled?0.5:1,...style}}>{children}</button>);
-    };
-
-    const Input = ({label,value,onChange,type="text",placeholder,options,style={}}) => {
-      const base = {background:COLORS.surface,border:"1px solid "+COLORS.border,borderRadius:10,color:COLORS.text,padding:"10px 14px",fontSize:14,width:"100%",fontFamily:"'DM Sans',sans-serif",outline:"none",boxSizing:"border-box"};
-      return (
-        <div style={{marginBottom:14,...style}}>
-          {label && <label style={{display:"block",fontSize:12,color:COLORS.textMuted,marginBottom:6,fontWeight:500}}>{label}</label>}
-          {options ? (
-            <select value={value} onChange={(e)=>onChange(e.target.value)} style={{...base,appearance:"auto"}}>
-              <option value="">{placeholder||"Select..."}</option>
-              {options.map((o)=><option key={o} value={o}>{o}</option>)}
-            </select>
-          ) : type==="textarea" ? (
-            <textarea value={value} onChange={(e)=>onChange(e.target.value)} placeholder={placeholder} rows={3} style={{...base,resize:"vertical"}} />
-          ) : (
-            <input type={type} value={value} onChange={(e)=>onChange(e.target.value)} placeholder={placeholder} style={base} />
-          )}
-        </div>
-      );
-    };
-
-    const Card = ({children,style={},onClick}) => (
-      <div onClick={onClick} style={{background:COLORS.card,border:"1px solid "+COLORS.border,borderRadius:14,padding:20,...style,cursor:onClick?"pointer":"default"}}>{children}</div>
-    );
-
-    const Modal = ({open,onClose,title,children,width=480}) => {
-      if(!open) return null;
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={onClose}>
-          <div onClick={(e)=>e.stopPropagation()} style={{background:COLORS.surface,border:"1px solid "+COLORS.border,borderRadius:18,padding:28,width:"90%",maxWidth:width,maxHeight:"85vh",overflowY:"auto"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-              <h3 style={{margin:0,fontSize:18,color:COLORS.text}}>{title}</h3>
-              <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",padding:4}}><Icon name="close" color={COLORS.textMuted}/></button>
-            </div>
-            {children}
-          </div>
-        </div>
-      );
-    };
-
-    const StatCard = ({label,value,sub,color=COLORS.accent,icon}) => (
-      <Card style={{flex:"1 1 200px",minWidth:170}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-          <div>
-            <div style={{fontSize:12,color:COLORS.textMuted,marginBottom:6,fontWeight:500}}>{label}</div>
-            <div style={{fontSize:24,fontWeight:700,color,fontFamily:"'Space Mono',monospace"}}>{value}</div>
-            {sub && <div style={{fontSize:12,color:COLORS.textMuted,marginTop:4}}>{sub}</div>}
-          </div>
-          {icon && <div style={{background:color+"18",borderRadius:10,padding:10,display:"flex"}}><Icon name={icon} color={color} size={20}/></div>}
-        </div>
-      </Card>
-    );
-
-    const ProgressBar = ({value,max,color=COLORS.accent,height=8}) => {
-      const pct = max>0?Math.min((value/max)*100,100):0;
-      return (<div style={{background:COLORS.bg,borderRadius:height,height,width:"100%",overflow:"hidden"}}><div style={{width:pct+"%",height:"100%",background:color,borderRadius:height,transition:"width 0.6s ease"}}/></div>);
-    };
-
-    const EmptyState = ({icon,message,action,onAction}) => (
-      <div style={{textAlign:"center",padding:"50px 20px",color:COLORS.textDim}}>
-        <div style={{marginBottom:16,opacity:0.5}}><Icon name={icon} size={48} color={COLORS.textDim}/></div>
-        <div style={{fontSize:15,marginBottom:16}}>{message}</div>
-        {action && <Btn onClick={onAction} variant="small">{action}</Btn>}
+  <section class="hero">
+    <div>
+      <div class="hero-badge"><span class="dot"></span> Now available for everyone</div>
+      <h1>Take Control of<br/>Your <span class="highlight">Money</span></h1>
+      <p>Track income, manage expenses, build budgets, grow savings, and monitor investments — all in one simple, beautiful platform.</p>
+      <div class="hero-buttons">
+        <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary">
+          Start Free Trial
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#features" class="btn-secondary">See Features</a>
       </div>
-    );
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="num">6+</div><div class="label">Financial Tools</div></div>
+        <div class="hero-stat"><div class="num">100%</div><div class="label">Secure & Private</div></div>
+        <div class="hero-stat"><div class="num">24/7</div><div class="label">Access Anywhere</div></div>
+      </div>
+      <div class="floating-cards">
+        <div class="float-card">
+          <div class="fc-label">Monthly Income</div>
+          <div class="fc-value fc-green">+TZS 2,400,000</div>
+        </div>
+        <div class="float-card">
+          <div class="fc-label">Expenses</div>
+          <div class="fc-value fc-red">-TZS 1,650,000</div>
+        </div>
+        <div class="float-card" style="animation-delay:4s">
+          <div class="fc-label">Savings Goal</div>
+          <div class="fc-value fc-blue">78% reached</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    const MiniBar = ({data,color,height=60}) => {
-      if(!data.length) return null;
-      const max = Math.max(...data,1);
-      const w = 100/data.length;
-      return (<svg width="100%" height={height} viewBox={"0 0 100 "+height} preserveAspectRatio="none">
-        {data.map((v,i)=>{const h=(v/max)*(height-4); return <rect key={i} x={i*w+w*0.15} y={height-h} width={w*0.7} height={h} rx={2} fill={color} opacity={0.7+(i/data.length)*0.3}/>;})}
-      </svg>);
-    };
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="section-label">Features</div>
+      <div class="section-title">Everything you need to<br/>manage your money</div>
+      <div class="section-desc">Fedha gives you powerful yet simple tools to understand your finances and make smarter decisions every day.</div>
 
-    // Auth Page
-    const AuthPage = ({data,setData,onDone}) => {
-      const [mode,setMode] = useState(data.registered?"login":"register");
-      const [form,setForm] = useState({name:"",email:"",pin:"",currency:"TZS"});
-      const [error,setError] = useState("");
-      const handleRegister = () => {
-        if(!form.name||!form.email||!form.pin) return setError("All fields are required");
-        if(form.pin.length<4) return setError("PIN must be at least 4 characters");
-        const nd={...data,user:{name:form.name,email:form.email,pin:form.pin,currency:form.currency},registered:true};
-        setData(nd);saveData(nd);onDone();
-      };
-      const handleLogin = () => {
-        if(form.email===data.user.email&&form.pin===data.user.pin){onDone();}
-        else setError("Invalid credentials");
-      };
-      return (
-        <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:COLORS.bg,padding:20}}>
-          <div style={{width:"100%",maxWidth:420}}>
-            <div style={{textAlign:"center",marginBottom:36}}>
-              <div style={{fontSize:36,fontWeight:800,color:COLORS.accent,fontFamily:"'Space Mono',monospace",letterSpacing:-1}}>Fedha</div>
-              <div style={{fontSize:14,color:COLORS.textMuted,marginTop:6}}>Personal Finance System</div>
-            </div>
-            <Card style={{padding:32}}>
-              <div style={{display:"flex",gap:8,marginBottom:24}}>
-                {["login","register"].map((m)=>(
-                  <button key={m} onClick={()=>{setMode(m);setError("");}} style={{...btnBase,flex:1,padding:"10px 0",fontSize:14,background:mode===m?COLORS.accentDim:"transparent",color:mode===m?COLORS.accent:COLORS.textMuted,border:"1px solid "+(mode===m?COLORS.accent+"40":COLORS.border)}}>{m==="login"?"Sign In":"Register"}</button>
-                ))}
-              </div>
-              {mode==="register"&&<Input label="Full Name" value={form.name} onChange={(v)=>setForm({...form,name:v})} placeholder="Your name"/>}
-              <Input label="Email" value={form.email} onChange={(v)=>setForm({...form,email:v})} type="email" placeholder="you@example.com"/>
-              <Input label="PIN / Password" value={form.pin} onChange={(v)=>setForm({...form,pin:v})} type="password" placeholder="Min 4 characters"/>
-              {mode==="register"&&<Input label="Currency" value={form.currency} onChange={(v)=>setForm({...form,currency:v})} options={["TZS","KES","UGX","USD","EUR","GBP"]}/>}
-              {error&&<div style={{color:COLORS.warn,fontSize:13,marginBottom:12}}>{error}</div>}
-              <Btn onClick={mode==="register"?handleRegister:handleLogin} style={{width:"100%",marginTop:8}}>{mode==="register"?"Create Account":"Sign In"}</Btn>
-              {mode==="login"&&data.registered&&(
-                <div style={{textAlign:"center",marginTop:16}}>
-                  <button onClick={()=>{setData(defaultData());saveData(defaultData());setMode("register");}} style={{background:"none",border:"none",color:COLORS.textDim,fontSize:12,cursor:"pointer",textDecoration:"underline"}}>Reset all data & start fresh</button>
-                </div>
-              )}
-            </Card>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(0,212,170,0.12)">📊</div>
+          <h3>Smart Dashboard</h3>
+          <p>See your complete financial picture at a glance — income, expenses, balance, budget status, savings progress, and investments all in one view.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(255,179,71,0.12)">📋</div>
+          <h3>Budget Planning</h3>
+          <p>Create monthly budgets by category — food, rent, transport, bills, and more. Get alerts when you're approaching or exceeding your limits.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(91,159,255,0.12)">💰</div>
+          <h3>Income Tracking</h3>
+          <p>Record all your income sources — salary, business, freelance, gifts, commissions. Know exactly how much money is coming in each month.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(255,107,107,0.12)">🧾</div>
+          <h3>Expense Tracking</h3>
+          <p>Log every expense with category, description, and payment method. See where your money goes and cut unnecessary spending.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(179,136,255,0.12)">🎯</div>
+          <h3>Savings Goals</h3>
+          <p>Set goals for emergencies, school fees, land, business capital, or anything else. Track your progress and stay motivated to save.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(0,212,170,0.12)">📈</div>
+          <h3>Investment Tracker</h3>
+          <p>Monitor shares, bonds, mutual funds, fixed deposits, business investments, and property. See your gains and expected returns.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(255,179,71,0.12)">📑</div>
+          <h3>Reports & Analysis</h3>
+          <p>Automatic financial reports — spending by category, income trends, budget performance, and 6-month comparisons with visual charts.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(91,159,255,0.12)">🔔</div>
+          <h3>Smart Alerts</h3>
+          <p>Get notified when budgets are exceeded, savings targets are due, or it's time for your monthly review. Never miss a financial milestone.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(179,136,255,0.12)">📱</div>
+          <h3>Works Everywhere</h3>
+          <p>Access from your phone, tablet, or computer. No app download needed — just open in your browser and your data is always synced.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" style="background:var(--surface)">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">How It Works</div>
+        <div class="section-title">Get started in 3 simple steps</div>
+        <div class="section-desc" style="margin:0 auto">No complicated setup. No downloads. Just sign up and start managing your money.</div>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Create Your Account</h3>
+          <p>Sign up with your name and email. It takes less than 30 seconds. Your data is private and secure.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Add Your Finances</h3>
+          <p>Enter your income, expenses, budget, savings goals, and investments. The dashboard updates automatically.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Watch Your Money Grow</h3>
+          <p>Use reports and alerts to stay on track. Make better decisions and reach your financial goals faster.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  <section>
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Testimonials</div>
+        <div class="section-title">Loved by people like you</div>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial">
+          <div class="testimonial-text">"Before Fedha, I had no idea where my salary was going each month. Now I can see every shilling and I've already saved more in 2 months than I did all last year."</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar" style="background:var(--accent)">AM</div>
+            <div><div class="testimonial-name">Amina M.</div><div class="testimonial-role">Teacher, Dar es Salaam</div></div>
           </div>
         </div>
-      );
-    };
-
-    // Dashboard
-    const DashboardPage = ({data}) => {
-      const cm=currentMonth();
-      const monthIncomes=data.incomes.filter((i)=>i.date.startsWith(cm));
-      const monthExpenses=data.expenses.filter((e)=>e.date.startsWith(cm));
-      const totalIncome=monthIncomes.reduce((s,i)=>s+Number(i.amount),0);
-      const totalExpense=monthExpenses.reduce((s,e)=>s+Number(e.amount),0);
-      const balance=totalIncome-totalExpense;
-      const budget=data.budgets[cm]||{};
-      const totalBudget=Object.values(budget).reduce((s,v)=>s+Number(v),0);
-      const totalSavings=data.savingsGoals.reduce((s,g)=>s+Number(g.saved||0),0);
-      const totalSavingsTarget=data.savingsGoals.reduce((s,g)=>s+Number(g.target),0);
-      const totalInvested=data.investments.reduce((s,inv)=>s+Number(inv.amount),0);
-      const recentTx=[...data.incomes.map((i)=>({...i,txType:"income"})),...data.expenses.map((e)=>({...e,txType:"expense"}))].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
-      const catSpend={};
-      monthExpenses.forEach((e)=>{catSpend[e.category]=(catSpend[e.category]||0)+Number(e.amount);});
-      const topCats=Object.entries(catSpend).sort((a,b)=>b[1]-a[1]).slice(0,5);
-      const last7=[];
-      for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split("T")[0];last7.push(data.expenses.filter((e)=>e.date===ds).reduce((s,e)=>s+Number(e.amount),0));}
-      const cur=data.user.currency||"TZS";
-      const dayNames=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-      const last7Labels=[];
-      for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);last7Labels.push(dayNames[d.getDay()]);}
-
-      return (
-        <div>
-          <div style={{marginBottom:28}}>
-            <h2 style={{margin:0,fontSize:22,color:COLORS.text,fontWeight:700}}>Welcome back, {data.user.name.split(" ")[0]}</h2>
-            <div style={{fontSize:13,color:COLORS.textMuted,marginTop:4}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div>
-          </div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:24}}>
-            <StatCard label="Monthly Income" value={cur+" "+fmt(totalIncome)} icon="income" color={COLORS.accent}/>
-            <StatCard label="Monthly Expenses" value={cur+" "+fmt(totalExpense)} icon="expense" color={COLORS.warn}/>
-            <StatCard label="Balance" value={cur+" "+fmt(balance)} icon="dashboard" color={balance>=0?COLORS.blue:COLORS.warn}/>
-            <StatCard label="Budget Set" value={cur+" "+fmt(totalBudget)} sub={totalBudget>0?Math.round((totalExpense/totalBudget)*100)+"% used":"Not set"} icon="budget" color={COLORS.orange}/>
-          </div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:24}}>
-            <StatCard label="Savings Progress" value={cur+" "+fmt(totalSavings)} sub={totalSavingsTarget>0?"of "+cur+" "+fmt(totalSavingsTarget)+" target":"No goals set"} icon="savings" color={COLORS.purple}/>
-            <StatCard label="Total Invested" value={cur+" "+fmt(totalInvested)} sub={data.investments.length+" investment(s)"} icon="invest" color={COLORS.blue}/>
-          </div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:14}}>
-            <Card style={{flex:"1 1 300px"}}>
-              <div style={{fontSize:13,color:COLORS.textMuted,fontWeight:600,marginBottom:14}}>Last 7 Days Spending</div>
-              <MiniBar data={last7} color={COLORS.warn} height={70}/>
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
-                {last7Labels.map((d,i)=>(<span key={i} style={{fontSize:10,color:COLORS.textDim}}>{d}</span>))}
-              </div>
-            </Card>
-            <Card style={{flex:"1 1 300px"}}>
-              <div style={{fontSize:13,color:COLORS.textMuted,fontWeight:600,marginBottom:14}}>Top Spending Categories</div>
-              {topCats.length===0?<div style={{color:COLORS.textDim,fontSize:13}}>No expenses this month</div>:topCats.map(([cat,amt])=>(
-                <div key={cat} style={{marginBottom:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}>
-                    <span style={{color:COLORS.text}}>{cat}</span>
-                    <span style={{color:COLORS.textMuted,fontFamily:"'Space Mono',monospace",fontSize:12}}>{cur} {fmt(amt)}</span>
-                  </div>
-                  <ProgressBar value={amt} max={totalExpense} color={COLORS.orange}/>
-                </div>
-              ))}
-            </Card>
-            <Card style={{flex:"1 1 100%",maxWidth:"100%"}}>
-              <div style={{fontSize:13,color:COLORS.textMuted,fontWeight:600,marginBottom:14}}>Recent Transactions</div>
-              {recentTx.length===0?<div style={{color:COLORS.textDim,fontSize:13}}>No transactions yet</div>:(
-                <div style={{overflowX:"auto"}}>
-                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-                    <thead><tr style={{color:COLORS.textDim,textAlign:"left"}}>
-                      <th style={{padding:"6px 10px",fontWeight:500}}>Date</th>
-                      <th style={{padding:"6px 10px",fontWeight:500}}>Type</th>
-                      <th style={{padding:"6px 10px",fontWeight:500}}>Details</th>
-                      <th style={{padding:"6px 10px",fontWeight:500,textAlign:"right"}}>Amount</th>
-                    </tr></thead>
-                    <tbody>
-                      {recentTx.map((tx)=>(
-                        <tr key={tx.id} style={{borderTop:"1px solid "+COLORS.border}}>
-                          <td style={{padding:"8px 10px",color:COLORS.textMuted}}>{fmtDate(tx.date)}</td>
-                          <td style={{padding:"8px 10px"}}><span style={{padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:600,background:tx.txType==="income"?COLORS.accentDim:COLORS.warnDim,color:tx.txType==="income"?COLORS.accent:COLORS.warn}}>{tx.txType==="income"?"Income":"Expense"}</span></td>
-                          <td style={{padding:"8px 10px",color:COLORS.text}}>{tx.source||tx.category}{tx.description?" — "+tx.description:""}</td>
-                          <td style={{padding:"8px 10px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:tx.txType==="income"?COLORS.accent:COLORS.warn}}>{tx.txType==="income"?"+":"−"}{cur} {fmt(tx.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </Card>
+        <div class="testimonial">
+          <div class="testimonial-text">"I run a small shop and tracking daily expenses was a nightmare. Fedha made it so simple — I just enter my sales and costs and the reports show me everything."</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar" style="background:var(--blue)">JK</div>
+            <div><div class="testimonial-name">Joseph K.</div><div class="testimonial-role">Business Owner, Arusha</div></div>
           </div>
         </div>
-      );
-    };
-
-    // Income Page
-    const IncomePage = ({data,setData}) => {
-      const [modal,setModal]=useState(false);
-      const [form,setForm]=useState({date:today(),source:"",amount:"",method:"",notes:""});
-      const cur=data.user.currency;
-      const add=()=>{
-        if(!form.source||!form.amount) return;
-        const nd={...data,incomes:[...data.incomes,{...form,id:uid(),amount:Number(form.amount)}]};
-        setData(nd);saveData(nd);setModal(false);setForm({date:today(),source:"",amount:"",method:"",notes:""});
-      };
-      const del=(id)=>{const nd={...data,incomes:data.incomes.filter((i)=>i.id!==id)};setData(nd);saveData(nd);};
-      const sorted=[...data.incomes].sort((a,b)=>b.date.localeCompare(a.date));
-      const total=data.incomes.filter((i)=>i.date.startsWith(currentMonth())).reduce((s,i)=>s+Number(i.amount),0);
-      return (
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexWrap:"wrap",gap:12}}>
-            <div><h2 style={{margin:0,fontSize:22,color:COLORS.text}}>Income Tracking</h2><div style={{fontSize:13,color:COLORS.textMuted,marginTop:4}}>This month: <span style={{color:COLORS.accent,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(total)}</span></div></div>
-            <Btn onClick={()=>setModal(true)}><span style={{display:"flex",alignItems:"center",gap:6}}><Icon name="plus" size={16} color="#0B0E11"/> Add Income</span></Btn>
+        <div class="testimonial">
+          <div class="testimonial-text">"As a university student, I needed something to budget my allowance. Fedha helps me plan every month so I never run out of money before month-end."</div>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar" style="background:var(--purple)">GN</div>
+            <div><div class="testimonial-name">Grace N.</div><div class="testimonial-role">Student, Dodoma</div></div>
           </div>
-          {sorted.length===0?<EmptyState icon="income" message="No income recorded yet" action="Add Income" onAction={()=>setModal(true)}/>:(
-            <Card style={{padding:0,overflow:"hidden"}}><div style={{overflowX:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-                <thead><tr style={{color:COLORS.textDim,textAlign:"left",background:COLORS.cardAlt}}>
-                  {["Date","Source","Method","Notes","Amount",""].map((h)=>(<th key={h} style={{padding:"10px 14px",fontWeight:500,textAlign:h==="Amount"?"right":"left"}}>{h}</th>))}
-                </tr></thead>
-                <tbody>{sorted.map((i)=>(
-                  <tr key={i.id} style={{borderTop:"1px solid "+COLORS.border}}>
-                    <td style={{padding:"10px 14px",color:COLORS.textMuted}}>{fmtDate(i.date)}</td>
-                    <td style={{padding:"10px 14px",color:COLORS.text,fontWeight:500}}>{i.source}</td>
-                    <td style={{padding:"10px 14px",color:COLORS.textMuted}}>{i.method}</td>
-                    <td style={{padding:"10px 14px",color:COLORS.textMuted,maxWidth:200,overflow:"hidden",textOverflow:"ellipsis"}}>{i.notes}</td>
-                    <td style={{padding:"10px 14px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:COLORS.accent,fontWeight:600}}>+{cur} {fmt(i.amount)}</td>
-                    <td style={{padding:"10px 14px"}}><button onClick={()=>del(i.id)} style={{background:"none",border:"none",cursor:"pointer",opacity:0.5}}><Icon name="trash" size={16} color={COLORS.warn}/></button></td>
-                  </tr>
-                ))}</tbody>
-              </table>
-            </div></Card>
-          )}
-          <Modal open={modal} onClose={()=>setModal(false)} title="Add Income">
-            <Input label="Date" type="date" value={form.date} onChange={(v)=>setForm({...form,date:v})}/>
-            <Input label="Income Source" value={form.source} onChange={(v)=>setForm({...form,source:v})} options={INCOME_SOURCES}/>
-            <Input label="Amount" type="number" value={form.amount} onChange={(v)=>setForm({...form,amount:v})} placeholder="0"/>
-            <Input label="Payment Method" value={form.method} onChange={(v)=>setForm({...form,method:v})} options={PAYMENT_METHODS}/>
-            <Input label="Notes" value={form.notes} onChange={(v)=>setForm({...form,notes:v})} type="textarea" placeholder="Optional notes..."/>
-            <Btn onClick={add} style={{width:"100%"}}>Save Income</Btn>
-          </Modal>
         </div>
-      );
-    };
+      </div>
+    </div>
+  </section>
 
-    // Expense Page
-    const ExpensePage = ({data,setData}) => {
-      const [modal,setModal]=useState(false);
-      const [form,setForm]=useState({date:today(),category:"",description:"",amount:"",method:"",notes:""});
-      const cur=data.user.currency;
-      const add=()=>{
-        if(!form.category||!form.amount) return;
-        const nd={...data,expenses:[...data.expenses,{...form,id:uid(),amount:Number(form.amount)}]};
-        setData(nd);saveData(nd);setModal(false);setForm({date:today(),category:"",description:"",amount:"",method:"",notes:""});
-        const cm=currentMonth();const budget=nd.budgets[cm]||{};const catBudget=Number(budget[form.category])||0;
-        if(catBudget>0){
-          const catSpent=nd.expenses.filter((e)=>e.date.startsWith(cm)&&e.category===form.category).reduce((s,e)=>s+Number(e.amount),0);
-          if(catSpent>=catBudget){
-            const note={id:uid(),type:"alert",message:"Budget limit reached for "+form.category+"! Spent "+cur+" "+fmt(catSpent)+" of "+cur+" "+fmt(catBudget),date:today()};
-            const nd2={...nd,notifications:[note,...nd.notifications].slice(0,50)};setData(nd2);saveData(nd2);
-          }
+  <!-- Pricing -->
+  <section id="pricing" style="background:var(--surface)">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">Pricing</div>
+        <div class="section-title">Simple, affordable pricing</div>
+        <div class="section-desc" style="margin:0 auto">One plan with everything you need. Start with a 7-day free trial — no payment required.</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-popular">MOST POPULAR</div>
+        <div class="pricing-name">Fedha Premium</div>
+        <div class="pricing-price">TZS 5,000<span>/mo</span></div>
+        <div class="pricing-period">7-day free trial included</div>
+        <ul class="pricing-features">
+          <li>Unlimited income & expense tracking</li>
+          <li>Monthly budget planning with alerts</li>
+          <li>Unlimited savings goals</li>
+          <li>Investment portfolio tracker</li>
+          <li>Financial reports & analysis</li>
+          <li>Smart notifications & reminders</li>
+          <li>Access from any device</li>
+          <li>Data backup & export</li>
+          <li>Priority support via WhatsApp</li>
+        </ul>
+        <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary">Start 7-Day Free Trial</a>
+        <div class="pricing-methods">
+          Pay with M-Pesa, Tigo Pesa, Visa, Mastercard, or Bank Transfer
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <div style="text-align:center">
+        <div class="section-label">FAQ</div>
+        <div class="section-title">Common questions</div>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">Do I need to download an app? <span class="faq-arrow">+</span></div>
+          <div class="faq-answer">No! Fedha works directly in your browser — Chrome, Safari, Firefox on any phone or computer. You can also add it to your home screen to use it like an app.</div>
+        </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">Is my financial data safe? <span class="faq-arrow">+</span></div>
+          <div class="faq-answer">Yes. Your data is encrypted and stored securely. Only you can access your account with your PIN/password. We never share your information with anyone.</div>
+        </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">Can I use it on my phone and computer? <span class="faq-arrow">+</span></div>
+          <div class="faq-answer">Yes! Fedha works on any device with a browser. Your data syncs automatically so you can start on your phone and continue on your laptop.</div>
+        </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">How do I pay? <span class="faq-arrow">+</span></div>
+          <div class="faq-answer">We accept M-Pesa, Tigo Pesa, Visa and Mastercard debit/credit cards, and bank transfers. Payment is monthly and you can cancel anytime.</div>
+        </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">What if I want to cancel? <span class="faq-arrow">+</span></div>
+          <div class="faq-answer">You can cancel your subscription anytime from your profile settings. There are no contracts or hidden fees. You can also export all your data before cancelling.</div>
+        </div>
+        <div class="faq-item" onclick="this.classList.toggle('open')">
+          <div class="faq-question">Is there a free trial? <span class="faq-arrow">+</span></div>
+          <div class="faq-answer">Yes! Every new account gets a 7-day free trial with full access to all features. No credit card required to start.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" id="start">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Start managing your<br/>money today</h2>
+        <p>Join thousands of people who are taking control of their finances with Fedha. Your 7-day free trial is waiting.</p>
+        <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary" style="font-size:18px;padding:16px 40px">
+          Get Started Free
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <div style="margin-top:16px;font-size:13px;color:var(--text-dim)">No credit card required · Cancel anytime</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div style="margin-bottom:24px"><a href="#" class="logo">Fedha</a></div>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="/cdn-cgi/l/email-protection#c4b7b1b4b4abb6b084a2a1a0aca5eaa7abeab0be">Contact</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+      <div class="footer-copy">&copy; 2026 Fedha. All rights reserved. Built with ❤ in Tanzania.</div>
+    </div>
+  </footer>
+
+  <!-- Scroll animation -->
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
         }
-      };
-      const del=(id)=>{const nd={...data,expenses:data.expenses.filter((e)=>e.id!==id)};setData(nd);saveData(nd);};
-      const sorted=[...data.expenses].sort((a,b)=>b.date.localeCompare(a.date));
-      const total=data.expenses.filter((e)=>e.date.startsWith(currentMonth())).reduce((s,e)=>s+Number(e.amount),0);
-      return (
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexWrap:"wrap",gap:12}}>
-            <div><h2 style={{margin:0,fontSize:22,color:COLORS.text}}>Expense Tracking</h2><div style={{fontSize:13,color:COLORS.textMuted,marginTop:4}}>This month: <span style={{color:COLORS.warn,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(total)}</span></div></div>
-            <Btn onClick={()=>setModal(true)}><span style={{display:"flex",alignItems:"center",gap:6}}><Icon name="plus" size={16} color="#0B0E11"/> Add Expense</span></Btn>
-          </div>
-          {sorted.length===0?<EmptyState icon="expense" message="No expenses recorded yet" action="Add Expense" onAction={()=>setModal(true)}/>:(
-            <Card style={{padding:0,overflow:"hidden"}}><div style={{overflowX:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-                <thead><tr style={{color:COLORS.textDim,textAlign:"left",background:COLORS.cardAlt}}>
-                  {["Date","Category","Description","Method","Amount",""].map((h)=>(<th key={h} style={{padding:"10px 14px",fontWeight:500,textAlign:h==="Amount"?"right":"left"}}>{h}</th>))}
-                </tr></thead>
-                <tbody>{sorted.map((e)=>(
-                  <tr key={e.id} style={{borderTop:"1px solid "+COLORS.border}}>
-                    <td style={{padding:"10px 14px",color:COLORS.textMuted}}>{fmtDate(e.date)}</td>
-                    <td style={{padding:"10px 14px",color:COLORS.text,fontWeight:500}}>{e.category}</td>
-                    <td style={{padding:"10px 14px",color:COLORS.textMuted}}>{e.description}</td>
-                    <td style={{padding:"10px 14px",color:COLORS.textMuted}}>{e.method}</td>
-                    <td style={{padding:"10px 14px",textAlign:"right",fontFamily:"'Space Mono',monospace",color:COLORS.warn,fontWeight:600}}>-{cur} {fmt(e.amount)}</td>
-                    <td style={{padding:"10px 14px"}}><button onClick={()=>del(e.id)} style={{background:"none",border:"none",cursor:"pointer",opacity:0.5}}><Icon name="trash" size={16} color={COLORS.warn}/></button></td>
-                  </tr>
-                ))}</tbody>
-              </table>
-            </div></Card>
-          )}
-          <Modal open={modal} onClose={()=>setModal(false)} title="Add Expense">
-            <Input label="Date" type="date" value={form.date} onChange={(v)=>setForm({...form,date:v})}/>
-            <Input label="Category" value={form.category} onChange={(v)=>setForm({...form,category:v})} options={EXPENSE_CATEGORIES}/>
-            <Input label="Description" value={form.description} onChange={(v)=>setForm({...form,description:v})} placeholder="What did you spend on?"/>
-            <Input label="Amount" type="number" value={form.amount} onChange={(v)=>setForm({...form,amount:v})} placeholder="0"/>
-            <Input label="Payment Method" value={form.method} onChange={(v)=>setForm({...form,method:v})} options={PAYMENT_METHODS}/>
-            <Input label="Notes" value={form.notes} onChange={(v)=>setForm({...form,notes:v})} type="textarea" placeholder="Optional notes..."/>
-            <Btn onClick={add} style={{width:"100%"}}>Save Expense</Btn>
-          </Modal>
-        </div>
-      );
-    };
+      });
+    }, { threshold: 0.1 });
 
-    // Budget Page
-    const BudgetPage = ({data,setData}) => {
-      const cm=currentMonth();
-      const [month,setMonth]=useState(cm);
-      const budget=data.budgets[month]||{};
-      const cur=data.user.currency;
-      const [editing,setEditing]=useState(null);
-      const [val,setVal]=useState("");
-      const setBudget=(cat,amount)=>{
-        const nb={...data.budgets,[month]:{...(data.budgets[month]||{}),[cat]:Number(amount)||0}};
-        if(!amount||Number(amount)===0) delete nb[month][cat];
-        const nd={...data,budgets:nb};setData(nd);saveData(nd);setEditing(null);
-      };
-      const monthExpenses=data.expenses.filter((e)=>e.date.startsWith(month));
-      const catSpend={};monthExpenses.forEach((e)=>{catSpend[e.category]=(catSpend[e.category]||0)+Number(e.amount);});
-      const totalBudget=Object.values(budget).reduce((s,v)=>s+Number(v),0);
-      const totalSpent=monthExpenses.reduce((s,e)=>s+Number(e.amount),0);
-      return (
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexWrap:"wrap",gap:12}}>
-            <div><h2 style={{margin:0,fontSize:22,color:COLORS.text}}>Budget Planning</h2>
-              <div style={{fontSize:13,color:COLORS.textMuted,marginTop:4}}>Budget: <span style={{color:COLORS.orange,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(totalBudget)}</span> | Spent: <span style={{color:COLORS.warn,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(totalSpent)}</span></div>
-            </div>
-            <Input value={month} onChange={setMonth} type="month" style={{marginBottom:0,width:180}}/>
-          </div>
-          {totalBudget>0&&(
-            <Card style={{marginBottom:20}}>
-              <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:8}}>
-                <span style={{color:COLORS.textMuted}}>Overall Budget Usage</span>
-                <span style={{color:totalSpent>totalBudget?COLORS.warn:COLORS.accent,fontFamily:"'Space Mono',monospace"}}>{Math.round((totalSpent/totalBudget)*100)}%</span>
-              </div>
-              <ProgressBar value={totalSpent} max={totalBudget} color={totalSpent>totalBudget?COLORS.warn:COLORS.accent} height={10}/>
-            </Card>
-          )}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
-            {EXPENSE_CATEGORIES.map((cat)=>{
-              const planned=Number(budget[cat])||0;const spent=catSpend[cat]||0;const pct=planned>0?Math.round((spent/planned)*100):0;const over=spent>planned&&planned>0;
-              return (
-                <Card key={cat}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                    <span style={{fontSize:14,fontWeight:600,color:COLORS.text}}>{cat}</span>
-                    {editing===cat?(
-                      <div style={{display:"flex",gap:6}}>
-                        <input type="number" value={val} onChange={(e)=>setVal(e.target.value)} placeholder="Amount" style={{width:90,padding:"4px 8px",borderRadius:6,border:"1px solid "+COLORS.border,background:COLORS.bg,color:COLORS.text,fontSize:13,fontFamily:"'Space Mono',monospace"}} autoFocus onKeyDown={(e)=>e.key==="Enter"&&setBudget(cat,val)}/>
-                        <button onClick={()=>setBudget(cat,val)} style={{background:COLORS.accentDim,border:"none",borderRadius:6,padding:"4px 8px",cursor:"pointer"}}><Icon name="check" size={14} color={COLORS.accent}/></button>
-                      </div>
-                    ):(
-                      <button onClick={()=>{setEditing(cat);setVal(planned||"");}} style={{background:"none",border:"none",cursor:"pointer",fontSize:12,color:COLORS.accent}}>{planned>0?"Edit":"+ Set"}</button>
-                    )}
-                  </div>
-                  {planned>0&&(<Fragment>
-                    <ProgressBar value={spent} max={planned} color={over?COLORS.warn:COLORS.accent}/>
-                    <div style={{display:"flex",justifyContent:"space-between",marginTop:6,fontSize:12}}>
-                      <span style={{color:over?COLORS.warn:COLORS.textMuted}}>Spent: {cur} {fmt(spent)}</span>
-                      <span style={{color:COLORS.textDim}}>of {cur} {fmt(planned)}</span>
-                    </div>
-                    {over&&<div style={{fontSize:11,color:COLORS.warn,marginTop:4,display:"flex",alignItems:"center",gap:4}}><Icon name="alert" size={12} color={COLORS.warn}/> Over budget by {cur} {fmt(spent-planned)}</div>}
-                  </Fragment>)}
-                  {planned===0&&<div style={{fontSize:12,color:COLORS.textDim}}>No budget set</div>}
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      );
-    };
-
-    // Savings Page
-    const SavingsPage = ({data,setData}) => {
-      const [modal,setModal]=useState(false);
-      const [addModal,setAddModal]=useState(null);
-      const [form,setForm]=useState({name:"",target:"",saved:"0",deadline:""});
-      const [addAmt,setAddAmt]=useState("");
-      const cur=data.user.currency;
-      const add=()=>{
-        if(!form.name||!form.target) return;
-        const nd={...data,savingsGoals:[...data.savingsGoals,{...form,id:uid(),target:Number(form.target),saved:Number(form.saved)||0}]};
-        setData(nd);saveData(nd);setModal(false);setForm({name:"",target:"",saved:"0",deadline:""});
-      };
-      const addSavings=(goalId)=>{
-        if(!addAmt) return;
-        const nd={...data,savingsGoals:data.savingsGoals.map((g)=>g.id===goalId?{...g,saved:Number(g.saved)+Number(addAmt)}:g)};
-        setData(nd);saveData(nd);setAddModal(null);setAddAmt("");
-      };
-      const del=(id)=>{const nd={...data,savingsGoals:data.savingsGoals.filter((g)=>g.id!==id)};setData(nd);saveData(nd);};
-      const totalSaved=data.savingsGoals.reduce((s,g)=>s+Number(g.saved),0);
-      const totalTarget=data.savingsGoals.reduce((s,g)=>s+Number(g.target),0);
-      return (
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexWrap:"wrap",gap:12}}>
-            <div><h2 style={{margin:0,fontSize:22,color:COLORS.text}}>Savings Goals</h2>
-              <div style={{fontSize:13,color:COLORS.textMuted,marginTop:4}}>Saved: <span style={{color:COLORS.purple,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(totalSaved)}</span> of {cur} {fmt(totalTarget)}</div>
-            </div>
-            <Btn onClick={()=>setModal(true)}><span style={{display:"flex",alignItems:"center",gap:6}}><Icon name="plus" size={16} color="#0B0E11"/> New Goal</span></Btn>
-          </div>
-          {data.savingsGoals.length===0?<EmptyState icon="target" message="No savings goals yet" action="Create Goal" onAction={()=>setModal(true)}/>:(
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:14}}>
-              {data.savingsGoals.map((g)=>{
-                const pct=Number(g.target)>0?Math.round((Number(g.saved)/Number(g.target))*100):0;
-                const remaining=Math.max(0,Number(g.target)-Number(g.saved));
-                return (
-                  <Card key={g.id}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                      <div><div style={{fontSize:16,fontWeight:700,color:COLORS.text}}>{g.name}</div>{g.deadline&&<div style={{fontSize:12,color:COLORS.textDim,marginTop:2}}>Due: {fmtDate(g.deadline)}</div>}</div>
-                      <div style={{display:"flex",gap:6}}>
-                        <button onClick={()=>{setAddModal(g.id);setAddAmt("");}} style={{background:COLORS.accentDim,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer"}}><Icon name="plus" size={14} color={COLORS.accent}/></button>
-                        <button onClick={()=>del(g.id)} style={{background:COLORS.warnDim,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer"}}><Icon name="trash" size={14} color={COLORS.warn}/></button>
-                      </div>
-                    </div>
-                    <div style={{margin:"16px 0 8px"}}>
-                      <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:6}}>
-                        <span style={{color:COLORS.purple,fontFamily:"'Space Mono',monospace",fontWeight:600}}>{pct}%</span>
-                        <span style={{color:COLORS.textMuted}}>{cur} {fmt(g.saved)} / {cur} {fmt(g.target)}</span>
-                      </div>
-                      <ProgressBar value={Number(g.saved)} max={Number(g.target)} color={COLORS.purple} height={10}/>
-                    </div>
-                    <div style={{fontSize:12,color:COLORS.textDim}}>Remaining: {cur} {fmt(remaining)}</div>
-                    {pct>=100&&<div style={{fontSize:12,color:COLORS.accent,marginTop:4,fontWeight:600}}>Goal reached!</div>}
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-          <Modal open={modal} onClose={()=>setModal(false)} title="New Savings Goal">
-            <Input label="Goal Name" value={form.name} onChange={(v)=>setForm({...form,name:v})} placeholder="e.g. Emergency Fund"/>
-            <Input label="Target Amount" type="number" value={form.target} onChange={(v)=>setForm({...form,target:v})} placeholder="0"/>
-            <Input label="Already Saved" type="number" value={form.saved} onChange={(v)=>setForm({...form,saved:v})} placeholder="0"/>
-            <Input label="Target Date (optional)" type="date" value={form.deadline} onChange={(v)=>setForm({...form,deadline:v})}/>
-            <Btn onClick={add} style={{width:"100%"}}>Create Goal</Btn>
-          </Modal>
-          <Modal open={!!addModal} onClose={()=>setAddModal(null)} title="Add to Savings" width={360}>
-            <Input label="Amount to Add" type="number" value={addAmt} onChange={setAddAmt} placeholder="0"/>
-            <Btn onClick={()=>addSavings(addModal)} style={{width:"100%"}}>Add Savings</Btn>
-          </Modal>
-        </div>
-      );
-    };
-
-    // Investment Page
-    const InvestmentPage = ({data,setData}) => {
-      const [modal,setModal]=useState(false);
-      const [form,setForm]=useState({type:"",name:"",amount:"",date:today(),expectedReturn:"",currentValue:"",notes:""});
-      const cur=data.user.currency;
-      const add=()=>{
-        if(!form.type||!form.amount) return;
-        const nd={...data,investments:[...data.investments,{...form,id:uid(),amount:Number(form.amount),expectedReturn:Number(form.expectedReturn)||0,currentValue:Number(form.currentValue)||Number(form.amount)}]};
-        setData(nd);saveData(nd);setModal(false);setForm({type:"",name:"",amount:"",date:today(),expectedReturn:"",currentValue:"",notes:""});
-      };
-      const del=(id)=>{const nd={...data,investments:data.investments.filter((i)=>i.id!==id)};setData(nd);saveData(nd);};
-      const totalInvested=data.investments.reduce((s,i)=>s+Number(i.amount),0);
-      const totalCurrent=data.investments.reduce((s,i)=>s+Number(i.currentValue||i.amount),0);
-      const gain=totalCurrent-totalInvested;
-      return (
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexWrap:"wrap",gap:12}}>
-            <div><h2 style={{margin:0,fontSize:22,color:COLORS.text}}>Investments</h2>
-              <div style={{fontSize:13,color:COLORS.textMuted,marginTop:4}}>Invested: <span style={{color:COLORS.blue,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(totalInvested)}</span>
-              {gain!==0&&<span> | <span style={{color:gain>0?COLORS.accent:COLORS.warn}}>{gain>0?"+":""}{cur} {fmt(gain)}</span></span>}</div>
-            </div>
-            <Btn onClick={()=>setModal(true)}><span style={{display:"flex",alignItems:"center",gap:6}}><Icon name="plus" size={16} color="#0B0E11"/> Add Investment</span></Btn>
-          </div>
-          {data.investments.length===0?<EmptyState icon="invest" message="No investments recorded yet" action="Add Investment" onAction={()=>setModal(true)}/>:(
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:14}}>
-              {data.investments.map((inv)=>{
-                const g=Number(inv.currentValue||inv.amount)-Number(inv.amount);
-                return (
-                  <Card key={inv.id}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                      <div>
-                        <span style={{fontSize:11,padding:"2px 10px",borderRadius:20,background:COLORS.blueDim,color:COLORS.blue,fontWeight:600}}>{inv.type}</span>
-                        <div style={{fontSize:16,fontWeight:700,color:COLORS.text,marginTop:8}}>{inv.name||inv.type}</div>
-                        <div style={{fontSize:12,color:COLORS.textDim,marginTop:2}}>{fmtDate(inv.date)}</div>
-                      </div>
-                      <button onClick={()=>del(inv.id)} style={{background:COLORS.warnDim,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer"}}><Icon name="trash" size={14} color={COLORS.warn}/></button>
-                    </div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:14}}>
-                      <div><div style={{fontSize:11,color:COLORS.textDim}}>Invested</div><div style={{fontSize:15,fontWeight:600,color:COLORS.text,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(inv.amount)}</div></div>
-                      <div><div style={{fontSize:11,color:COLORS.textDim}}>Current Value</div><div style={{fontSize:15,fontWeight:600,color:g>=0?COLORS.accent:COLORS.warn,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(inv.currentValue||inv.amount)}</div></div>
-                      {Number(inv.expectedReturn)>0&&<div><div style={{fontSize:11,color:COLORS.textDim}}>Expected Return</div><div style={{fontSize:13,color:COLORS.textMuted,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(inv.expectedReturn)}</div></div>}
-                      <div><div style={{fontSize:11,color:COLORS.textDim}}>Gain/Loss</div><div style={{fontSize:13,fontWeight:600,color:g>=0?COLORS.accent:COLORS.warn,fontFamily:"'Space Mono',monospace"}}>{g>=0?"+":""}{cur} {fmt(g)}</div></div>
-                    </div>
-                    {inv.notes&&<div style={{fontSize:12,color:COLORS.textDim,marginTop:10,paddingTop:10,borderTop:"1px solid "+COLORS.border}}>{inv.notes}</div>}
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-          <Modal open={modal} onClose={()=>setModal(false)} title="Add Investment">
-            <Input label="Investment Type" value={form.type} onChange={(v)=>setForm({...form,type:v})} options={INVESTMENT_TYPES}/>
-            <Input label="Name / Description" value={form.name} onChange={(v)=>setForm({...form,name:v})} placeholder="e.g. Safaricom Shares"/>
-            <Input label="Amount Invested" type="number" value={form.amount} onChange={(v)=>setForm({...form,amount:v})} placeholder="0"/>
-            <Input label="Date" type="date" value={form.date} onChange={(v)=>setForm({...form,date:v})}/>
-            <Input label="Expected Return" type="number" value={form.expectedReturn} onChange={(v)=>setForm({...form,expectedReturn:v})} placeholder="0"/>
-            <Input label="Current Value" type="number" value={form.currentValue} onChange={(v)=>setForm({...form,currentValue:v})} placeholder="Same as invested"/>
-            <Input label="Notes" value={form.notes} onChange={(v)=>setForm({...form,notes:v})} type="textarea" placeholder="Optional notes..."/>
-            <Btn onClick={add} style={{width:"100%"}}>Save Investment</Btn>
-          </Modal>
-        </div>
-      );
-    };
-
-    // Reports Page
-    const ReportsPage = ({data}) => {
-      const cur=data.user.currency;const cm=currentMonth();
-      const months=[];
-      for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const m=d.toISOString().slice(0,7);
-        const inc=data.incomes.filter((x)=>x.date.startsWith(m)).reduce((s,x)=>s+Number(x.amount),0);
-        const exp=data.expenses.filter((x)=>x.date.startsWith(m)).reduce((s,x)=>s+Number(x.amount),0);
-        months.push({month:m,label:d.toLocaleDateString("en-US",{month:"short"}),income:inc,expense:exp});
-      }
-      const maxVal=Math.max(...months.map((m)=>Math.max(m.income,m.expense)),1);
-      const catSpend={};data.expenses.filter((e)=>e.date.startsWith(cm)).forEach((e)=>{catSpend[e.category]=(catSpend[e.category]||0)+Number(e.amount);});
-      const catEntries=Object.entries(catSpend).sort((a,b)=>b[1]-a[1]);
-      const totalExp=catEntries.reduce((s,[,v])=>s+v,0);
-      const srcIncome={};data.incomes.filter((i)=>i.date.startsWith(cm)).forEach((i)=>{srcIncome[i.source]=(srcIncome[i.source]||0)+Number(i.amount);});
-      const srcEntries=Object.entries(srcIncome).sort((a,b)=>b[1]-a[1]);
-      const catColors=[COLORS.accent,COLORS.blue,COLORS.orange,COLORS.purple,COLORS.warn,"#FF87B2","#67E8F9","#A3E635","#FB923C","#C084FC"];
-      return (
-        <div>
-          <h2 style={{margin:"0 0 24px",fontSize:22,color:COLORS.text}}>Reports & Analysis</h2>
-          <Card style={{marginBottom:20}}>
-            <div style={{fontSize:13,color:COLORS.textMuted,fontWeight:600,marginBottom:16}}>Income vs Expenses (Last 6 Months)</div>
-            <div style={{display:"flex",alignItems:"flex-end",gap:6,height:140}}>
-              {months.map((m)=>(
-                <div key={m.month} style={{flex:1,textAlign:"center"}}>
-                  <div style={{display:"flex",gap:2,justifyContent:"center",alignItems:"flex-end",height:110}}>
-                    <div style={{width:"40%",background:COLORS.accent,borderRadius:"4px 4px 0 0",height:(m.income/maxVal)*110+"px",minHeight:2,opacity:0.8}}/>
-                    <div style={{width:"40%",background:COLORS.warn,borderRadius:"4px 4px 0 0",height:(m.expense/maxVal)*110+"px",minHeight:2,opacity:0.8}}/>
-                  </div>
-                  <div style={{fontSize:11,color:COLORS.textDim,marginTop:6}}>{m.label}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{display:"flex",gap:16,justifyContent:"center",marginTop:14}}>
-              <span style={{fontSize:12,color:COLORS.accent,display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,background:COLORS.accent,borderRadius:2,display:"inline-block"}}/> Income</span>
-              <span style={{fontSize:12,color:COLORS.warn,display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,background:COLORS.warn,borderRadius:2,display:"inline-block"}}/> Expenses</span>
-            </div>
-          </Card>
-          <div style={{display:"flex",flexWrap:"wrap",gap:14}}>
-            <Card style={{flex:"1 1 300px"}}>
-              <div style={{fontSize:13,color:COLORS.textMuted,fontWeight:600,marginBottom:16}}>Expense Breakdown (This Month)</div>
-              {catEntries.length===0?<div style={{color:COLORS.textDim,fontSize:13}}>No data</div>:(
-                <Fragment>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:16}}>
-                    {catEntries.map(([cat,amt],i)=>(<div key={cat} style={{height:8,borderRadius:4,width:Math.max((amt/totalExp)*100,3)+"%",background:catColors[i%catColors.length]}}/>))}
-                  </div>
-                  {catEntries.map(([cat,amt],i)=>(
-                    <div key={cat} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+COLORS.border}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{width:10,height:10,borderRadius:3,background:catColors[i%catColors.length],display:"inline-block"}}/><span style={{fontSize:13,color:COLORS.text}}>{cat}</span></div>
-                      <div style={{textAlign:"right"}}><span style={{fontSize:13,color:COLORS.text,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(amt)}</span><span style={{fontSize:11,color:COLORS.textDim,marginLeft:8}}>{Math.round((amt/totalExp)*100)}%</span></div>
-                    </div>
-                  ))}
-                </Fragment>
-              )}
-            </Card>
-            <Card style={{flex:"1 1 300px"}}>
-              <div style={{fontSize:13,color:COLORS.textMuted,fontWeight:600,marginBottom:16}}>Income by Source (This Month)</div>
-              {srcEntries.length===0?<div style={{color:COLORS.textDim,fontSize:13}}>No data</div>:srcEntries.map(([src,amt],i)=>(
-                <div key={src} style={{marginBottom:12}}>
-                  <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}>
-                    <span style={{color:COLORS.text}}>{src}</span><span style={{color:COLORS.accent,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(amt)}</span>
-                  </div>
-                  <ProgressBar value={amt} max={srcEntries[0][1]} color={catColors[i%catColors.length]}/>
-                </div>
-              ))}
-            </Card>
-          </div>
-        </div>
-      );
-    };
-
-    // Profile Page
-    const ProfilePage = ({data,setData,onLogout}) => {
-      const [form,setForm]=useState({name:data.user.name,email:data.user.email,currency:data.user.currency,pin:""});
-      const [saved,setSaved]=useState(false);
-      const save=()=>{
-        const nd={...data,user:{...data.user,name:form.name,email:form.email,currency:form.currency,...(form.pin?{pin:form.pin}:{})}};
-        setData(nd);saveData(nd);setSaved(true);setTimeout(()=>setSaved(false),2000);
-      };
-      const exportData=()=>{
-        const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-        const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="fedha-backup.json";a.click();URL.revokeObjectURL(url);
-      };
-      return (
-        <div>
-          <h2 style={{margin:"0 0 24px",fontSize:22,color:COLORS.text}}>Profile & Settings</h2>
-          <div style={{maxWidth:500}}>
-            <Card style={{marginBottom:20}}>
-              <div style={{fontSize:14,fontWeight:600,color:COLORS.text,marginBottom:16}}>Personal Information</div>
-              <Input label="Full Name" value={form.name} onChange={(v)=>setForm({...form,name:v})}/>
-              <Input label="Email" value={form.email} onChange={(v)=>setForm({...form,email:v})} type="email"/>
-              <Input label="Currency" value={form.currency} onChange={(v)=>setForm({...form,currency:v})} options={["TZS","KES","UGX","USD","EUR","GBP"]}/>
-              <Input label="New PIN (leave blank to keep current)" value={form.pin} onChange={(v)=>setForm({...form,pin:v})} type="password"/>
-              <div style={{display:"flex",gap:10}}><Btn onClick={save}>Save Changes</Btn>{saved&&<span style={{color:COLORS.accent,fontSize:13,alignSelf:"center"}}>Saved!</span>}</div>
-            </Card>
-            <Card style={{marginBottom:20}}>
-              <div style={{fontSize:14,fontWeight:600,color:COLORS.text,marginBottom:12}}>Data Management</div>
-              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                <Btn onClick={exportData} variant="secondary"><span style={{display:"flex",alignItems:"center",gap:6}}><Icon name="download" size={16} color={COLORS.textMuted}/> Export Data</span></Btn>
-                <Btn onClick={onLogout} variant="danger"><span style={{display:"flex",alignItems:"center",gap:6}}><Icon name="logout" size={16} color={COLORS.warn}/> Log Out</span></Btn>
-              </div>
-            </Card>
-            <Card>
-              <div style={{fontSize:14,fontWeight:600,color:COLORS.text,marginBottom:8}}>Account Stats</div>
-              <div style={{fontSize:13,color:COLORS.textMuted,lineHeight:2}}>
-                <div>Total income entries: <span style={{color:COLORS.text}}>{data.incomes.length}</span></div>
-                <div>Total expense entries: <span style={{color:COLORS.text}}>{data.expenses.length}</span></div>
-                <div>Savings goals: <span style={{color:COLORS.text}}>{data.savingsGoals.length}</span></div>
-                <div>Investments: <span style={{color:COLORS.text}}>{data.investments.length}</span></div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      );
-    };
-
-    // Notifications
-    const NotificationsPage = ({data,setData}) => {
-      const clear=()=>{const nd={...data,notifications:[]};setData(nd);saveData(nd);};
-      return (
-        <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
-            <h2 style={{margin:0,fontSize:22,color:COLORS.text}}>Notifications</h2>
-            {data.notifications.length>0&&<Btn onClick={clear} variant="ghost">Clear All</Btn>}
-          </div>
-          {data.notifications.length===0?<EmptyState icon="bell" message="No notifications"/>:(
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {data.notifications.map((n)=>(
-                <Card key={n.id} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                  <div style={{background:n.type==="alert"?COLORS.warnDim:COLORS.accentDim,borderRadius:10,padding:10,flexShrink:0}}><Icon name={n.type==="alert"?"alert":"bell"} size={18} color={n.type==="alert"?COLORS.warn:COLORS.accent}/></div>
-                  <div><div style={{fontSize:14,color:COLORS.text}}>{n.message}</div><div style={{fontSize:12,color:COLORS.textDim,marginTop:4}}>{fmtDate(n.date)}</div></div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    };
-
-    // Main App
-    const NAV_ITEMS = [
-      {id:"dashboard",label:"Dashboard",icon:"dashboard"},
-      {id:"income",label:"Income",icon:"income"},
-      {id:"expenses",label:"Expenses",icon:"expense"},
-      {id:"budget",label:"Budget",icon:"budget"},
-      {id:"savings",label:"Savings",icon:"savings"},
-      {id:"investments",label:"Investments",icon:"invest"},
-      {id:"reports",label:"Reports",icon:"reports"},
-      {id:"notifications",label:"Alerts",icon:"bell"},
-      {id:"profile",label:"Profile",icon:"profile"},
-    ];
-
-    function App() {
-      const [data,setData]=useState(defaultData());
-      const [loggedIn,setLoggedIn]=useState(false);
-      const [page,setPage]=useState("dashboard");
-      const [loading,setLoading]=useState(true);
-      const [sidebarOpen,setSidebarOpen]=useState(false);
-      const [isMobile,setIsMobile]=useState(window.innerWidth<=768);
-
-      useEffect(()=>{
-        const d=loadData();if(d) setData(d);setLoading(false);
-        const handleResize=()=>setIsMobile(window.innerWidth<=768);
-        window.addEventListener("resize",handleResize);return ()=>window.removeEventListener("resize",handleResize);
-      },[]);
-
-      if(loading) return (<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:COLORS.bg,color:COLORS.accent,fontFamily:"'Space Mono',monospace",fontSize:18}}>Loading...</div>);
-
-      if(!loggedIn) return <AuthPage data={data} setData={setData} onDone={()=>setLoggedIn(true)}/>;
-
-      const renderPage=()=>{
-        switch(page){
-          case "dashboard": return <DashboardPage data={data}/>;
-          case "income": return <IncomePage data={data} setData={setData}/>;
-          case "expenses": return <ExpensePage data={data} setData={setData}/>;
-          case "budget": return <BudgetPage data={data} setData={setData}/>;
-          case "savings": return <SavingsPage data={data} setData={setData}/>;
-          case "investments": return <InvestmentPage data={data} setData={setData}/>;
-          case "reports": return <ReportsPage data={data}/>;
-          case "notifications": return <NotificationsPage data={data} setData={setData}/>;
-          case "profile": return <ProfilePage data={data} setData={setData} onLogout={()=>setLoggedIn(false)}/>;
-          default: return <DashboardPage data={data}/>;
-        }
-      };
-
-      const unreadNotifs=data.notifications.length;
-
-      return (
-        <div style={{fontFamily:"'DM Sans',sans-serif",minHeight:"100vh",background:COLORS.bg,color:COLORS.text,display:"flex"}}>
-          {sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:99}}/>}
-          <aside style={{width:220,background:COLORS.surface,borderRight:"1px solid "+COLORS.border,padding:"20px 12px",display:"flex",flexDirection:"column",flexShrink:0,height:"100vh",zIndex:100,transition:"left 0.3s ease",...(isMobile?{position:"fixed",top:0,left:sidebarOpen?0:-240}:{position:"sticky",top:0,left:0})}}>
-            <div style={{fontSize:22,fontWeight:800,color:COLORS.accent,fontFamily:"'Space Mono',monospace",letterSpacing:-1,padding:"4px 10px 20px"}}>Fedha</div>
-            <nav style={{flex:1,display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
-              {NAV_ITEMS.map((item)=>(
-                <button key={item.id} onClick={()=>{setPage(item.id);setSidebarOpen(false);}} style={{...btnBase,display:"flex",alignItems:"center",gap:10,padding:"10px 12px",width:"100%",textAlign:"left",fontSize:14,background:page===item.id?COLORS.accentDim:"transparent",color:page===item.id?COLORS.accent:COLORS.textMuted,borderRadius:10,position:"relative"}}>
-                  <Icon name={item.icon} size={18} color={page===item.id?COLORS.accent:COLORS.textMuted}/>
-                  {item.label}
-                  {item.id==="notifications"&&unreadNotifs>0&&(<span style={{position:"absolute",right:10,background:COLORS.warn,color:"#fff",fontSize:10,fontWeight:700,borderRadius:10,padding:"1px 6px",minWidth:18,textAlign:"center"}}>{unreadNotifs}</span>)}
-                </button>
-              ))}
-            </nav>
-            <div style={{padding:"12px 10px",borderTop:"1px solid "+COLORS.border,fontSize:12,color:COLORS.textDim}}>{data.user.name}</div>
-          </aside>
-          <main style={{flex:1,minWidth:0}}>
-            <div style={{display:"flex",alignItems:"center",padding:"14px 20px",borderBottom:"1px solid "+COLORS.border,background:COLORS.surface}}>
-              {isMobile&&<button onClick={()=>setSidebarOpen(true)} style={{background:"none",border:"none",cursor:"pointer",marginRight:12,padding:4}}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={COLORS.textMuted} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-              </button>}
-              <div style={{fontSize:16,fontWeight:600,color:COLORS.text}}>{NAV_ITEMS.find((n)=>n.id===page)?.label}</div>
-            </div>
-            <div style={{padding:"24px 20px",maxWidth:1100,margin:"0 auto"}}>{renderPage()}</div>
-          </main>
-        </div>
-      );
-    }
-
-    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-  </script>
-</body>
-</html>
+    document.querySelectorAll('.feature-card, .step, .testimonial, .pricing-card').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'tra
