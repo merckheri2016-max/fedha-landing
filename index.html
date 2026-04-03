@@ -622,6 +622,10 @@
         fq4q:'How do I pay?',fq4a:'We accept M-Pesa, Tigo Pesa, Visa and Mastercard debit/credit cards, and bank transfers. Payment is monthly and you can cancel anytime.',
         fq5q:'What if I want to cancel?',fq5a:'You can cancel your subscription anytime from your profile settings. There are no contracts or hidden fees. You can also export all your data before cancelling.',
         fq6q:'Is there a free trial?',fq6a:'Yes! Every new account gets a 7-day free trial with full access to all features. No credit card required to start.',
+        testLabel:'Testimonials',
+        t1:'"Before Fedha, I had no idea where my salary was going each month. Now I can see every shilling and I\'ve already saved more in 2 months than I did all last year."',t1r:'Teacher, Dar es Salaam',
+        t2:'"I run a small shop and tracking daily expenses was a nightmare. Fedha made it so simple — I just enter my sales and costs and the reports show me everything."',t2r:'Business Owner, Arusha',
+        t3:'"As a university student, I needed something to budget my allowance. Fedha helps me plan every month so I never run out of money before month-end."',t3r:'Student, Dodoma',
         ctaTitle: 'Start managing your<br/>money today',
         ctaDesc: 'Join thousands of people who are taking control of their finances with Fedha. Your 7-day free trial is waiting.',
         ctaBtn: 'Get Started Free',
@@ -673,7 +677,11 @@
         fq3q:'Je, naweza kuitumia kwenye simu na kompyuta?',fq3a:'Ndio! Fedha inafanya kazi kwenye kifaa chochote chenye kivinjari. Data yako inasawazishwa kiotomatiki.',
         fq4q:'Ninalipiaje?',fq4a:'Tunakubali M-Pesa, Tigo Pesa, kadi za Visa na Mastercard, na uhamisho wa benki. Malipo ni ya kila mwezi na unaweza kusitisha wakati wowote.',
         fq5q:'Je, nikitaka kusitisha?',fq5a:'Unaweza kusitisha usajili wako wakati wowote kutoka kwenye mipangilio ya wasifu wako. Hakuna mikataba au ada zilizofichwa.',
-        fq6q:'Je, kuna jaribio la bure?',fq6a:'Ndio! Kila akaunti mpya inapata jaribio la bure la siku 7 na ufikiaji kamili wa vipengele vyote. Hakuna kadi inayohitajika.'
+        fq6q:'Je, kuna jaribio la bure?',fq6a:'Ndio! Kila akaunti mpya inapata jaribio la bure la siku 7 na ufikiaji kamili wa vipengele vyote. Hakuna kadi inayohitajika.',
+        testLabel:'Ushuhuda',
+        t1:'"Kabla ya Fedha, sikujua mshahara wangu unaenda wapi kila mwezi. Sasa naona kila shilingi na tayari nimeweka akiba zaidi katika miezi 2 kuliko mwaka mzima uliopita."',t1r:'Mwalimu, Dar es Salaam',
+        t2:'"Ninaendesha duka dogo na kufuatilia matumizi ya kila siku ilikuwa ndoto mbaya. Fedha imerahisisha sana — naingiza mauzo na gharama na ripoti zinanionyesha kila kitu."',t2r:'Mfanyabiashara, Arusha',
+        t3:'"Kama mwanafunzi wa chuo kikuu, nilihitaji kitu cha kupanga posho yangu. Fedha inanisaidia kupanga kila mwezi ili pesa zisiishe kabla ya mwisho wa mwezi."',t3r:'Mwanafunzi, Dodoma'
       },
       fr: {
         heroTag: 'Disponible pour tout le monde',
@@ -720,7 +728,11 @@
         fq3q:'Puis-je l\'utiliser sur mon téléphone et mon ordinateur?',fq3a:'Oui! Fedha fonctionne sur tout appareil avec un navigateur. Vos données se synchronisent automatiquement.',
         fq4q:'Comment je paie?',fq4a:'Nous acceptons M-Pesa, Tigo Pesa, cartes Visa et Mastercard, et virements bancaires. Le paiement est mensuel.',
         fq5q:'Et si je veux annuler?',fq5a:"Vous pouvez annuler votre abonnement à tout moment depuis vos paramètres de profil. Pas de contrats ni de frais cachés.",
-        fq6q:'Y a-t-il un essai gratuit?',fq6a:"Oui! Chaque nouveau compte bénéficie d'un essai gratuit de 7 jours avec accès complet. Aucune carte requise."
+        fq6q:'Y a-t-il un essai gratuit?',fq6a:"Oui! Chaque nouveau compte bénéficie d'un essai gratuit de 7 jours avec accès complet. Aucune carte requise.",
+        testLabel:'Témoignages',
+        t1:"\"Avant Fedha, je n'avais aucune idée où allait mon salaire chaque mois. Maintenant je vois chaque shilling et j'ai déjà épargné plus en 2 mois que toute l'année dernière.\"",t1r:'Enseignante, Dar es Salaam',
+        t2:"\"Je gère une petite boutique et suivre les dépenses quotidiennes était un cauchemar. Fedha a tout simplifié — j'entre mes ventes et coûts et les rapports me montrent tout.\"",t2r:"Propriétaire d'entreprise, Arusha",
+        t3:"\"En tant qu'étudiante universitaire, j'avais besoin de quelque chose pour budgéter mon allocation. Fedha m'aide à planifier chaque mois pour ne jamais manquer d'argent.\"",t3r:'Étudiante, Dodoma'
       }
     };
 
@@ -806,6 +818,20 @@
       // Testimonials title
       var testTitle = document.querySelector('section:nth-of-type(3) .section-title');
       if (testTitle && tr.testTitle) testTitle.textContent = tr.testTitle;
+      var testLabel = document.querySelector('section:nth-of-type(3) .section-label');
+      if (testLabel && tr.testLabel) testLabel.textContent = tr.testLabel;
+
+      // Testimonial texts
+      var testimonials = document.querySelectorAll('.testimonial');
+      var tKeys = ['t1','t2','t3'];
+      tKeys.forEach(function(tk, i) {
+        if (testimonials[i] && tr[tk]) {
+          var textEl = testimonials[i].querySelector('.testimonial-text');
+          if (textEl) textEl.textContent = tr[tk];
+          var roleEl = testimonials[i].querySelector('.testimonial-role');
+          if (roleEl && tr[tk+'r']) roleEl.textContent = tr[tk+'r'];
+        }
+      });
 
       // CTA sub
       var ctaSub = document.querySelector('.cta-box div:last-child');
