@@ -280,22 +280,28 @@
   <nav>
     <a href="#" class="logo">Fedha</a>
     <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#how-it-works">How It Works</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
-      <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary nav-cta">Get Started</a>
+      <a href="#features" data-en="Features" data-sw="Vipengele" data-fr="Fonctionnalités">Features</a>
+      <a href="#how-it-works" data-en="How It Works" data-sw="Inavyofanya Kazi" data-fr="Comment ça Marche">How It Works</a>
+      <a href="#pricing" data-en="Pricing" data-sw="Bei" data-fr="Tarifs">Pricing</a>
+      <a href="#faq" data-en="FAQ" data-sw="Maswali" data-fr="FAQ">FAQ</a>
+      <div style="display:flex;gap:4px;align-items:center;margin-left:8px">
+        <button onclick="switchLang('en')" class="lang-btn" id="btn-en" style="background:#00D4AA;color:#0B0E11">EN</button>
+        <button onclick="switchLang('sw')" class="lang-btn" id="btn-sw">SW</button>
+        <button onclick="switchLang('fr')" class="lang-btn" id="btn-fr">FR</button>
+      </div>
+      <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary nav-cta" data-en="Get Started" data-sw="Anza Sasa" data-fr="Commencer">Get Started</a>
     </div>
     <button class="mobile-menu-btn" onclick="document.getElementById('mobileMenu').classList.toggle('open')">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8892A8" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
   </nav>
   <div class="nav-links-mobile" id="mobileMenu">
-    <a href="#features" onclick="document.getElementById('mobileMenu').classList.remove('open')">Features</a>
-    <a href="#how-it-works" onclick="document.getElementById('mobileMenu').classList.remove('open')">How It Works</a>
-    <a href="#pricing" onclick="document.getElementById('mobileMenu').classList.remove('open')">Pricing</a>
-    <a href="#faq" onclick="document.getElementById('mobileMenu').classList.remove('open')">FAQ</a>
-    <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary" style="text-align:center" onclick="document.getElementById('mobileMenu').classList.remove('open')">Get Started</a>
+    <div style="display:flex;gap:6px;margin-bottom:8px"><button onclick="switchLang('en')" class="lang-btn" style="background:#00D4AA;color:#0B0E11">EN</button><button onclick="switchLang('sw')" class="lang-btn">SW</button><button onclick="switchLang('fr')" class="lang-btn">FR</button></div>
+    <a href="#features" onclick="document.getElementById('mobileMenu').classList.remove('open')" data-en="Features" data-sw="Vipengele" data-fr="Fonctionnalités">Features</a>
+    <a href="#how-it-works" onclick="document.getElementById('mobileMenu').classList.remove('open')" data-en="How It Works" data-sw="Inavyofanya Kazi" data-fr="Comment ça Marche">How It Works</a>
+    <a href="#pricing" onclick="document.getElementById('mobileMenu').classList.remove('open')" data-en="Pricing" data-sw="Bei" data-fr="Tarifs">Pricing</a>
+    <a href="#faq" onclick="document.getElementById('mobileMenu').classList.remove('open')" data-en="FAQ" data-sw="Maswali" data-fr="FAQ">FAQ</a>
+    <a href="https://fedha-finance-2sxq.vercel.app" class="btn-primary" style="text-align:center" onclick="document.getElementById('mobileMenu').classList.remove('open')" data-en="Get Started" data-sw="Anza Sasa" data-fr="Commencer">Get Started</a>
   </div>
 
   <!-- Hero -->
@@ -553,8 +559,13 @@
     </div>
   </footer>
 
-  <!-- Scroll animation -->
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <!-- Scroll animation & Language System -->
+  <style>
+    .lang-btn{border:1px solid #252D3D;background:transparent;color:#8892A8;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+    .lang-btn.active{background:#00D4AA;color:#0B0E11;border-color:#00D4AA}
+  </style>
+  <script>
+    // Scroll animation
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -566,4 +577,173 @@
 
     document.querySelectorAll('.feature-card, .step, .testimonial, .pricing-card').forEach(el => {
       el.style.opacity = '0';
-      el.style.transform = 'tra
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+
+    // Language translation data for main content
+    const translations = {
+      en: {
+        heroTag: 'Now available for everyone',
+        heroTitle: 'Take Control of<br/>Your <span class="highlight">Money</span>',
+        heroDesc: 'Track income, manage expenses, build budgets, grow savings, and monitor investments — all in one simple, beautiful platform.',
+        startTrial: 'Start Free Trial',
+        seeFeatures: 'See Features',
+        stat1: 'Financial Tools', stat2: 'Secure & Private', stat3: 'Access Anywhere',
+        featTitle: 'Everything you need to<br/>manage your money',
+        featDesc: 'Fedha gives you powerful yet simple tools to understand your finances and make smarter decisions every day.',
+        howTitle: 'Get started in 3 simple steps',
+        howDesc: 'No complicated setup. No downloads. Just sign up and start managing your money.',
+        step1t: 'Create Your Account', step1d: 'Sign up with your name and email. It takes less than 30 seconds. Your data is private and secure.',
+        step2t: 'Add Your Finances', step2d: 'Enter your income, expenses, budget, savings goals, and investments. The dashboard updates automatically.',
+        step3t: 'Watch Your Money Grow', step3d: 'Use reports and alerts to stay on track. Make better decisions and reach your financial goals faster.',
+        testTitle: 'Loved by people like you',
+        pricingTitle: 'Simple, affordable pricing',
+        pricingDesc: 'One plan with everything you need. Start with a 7-day free trial — no payment required.',
+        pricingBtn: 'Start 7-Day Free Trial',
+        pricingPay: 'Pay with M-Pesa, Tigo Pesa, Visa, Mastercard, or Bank Transfer',
+        faqTitle: 'Common questions',
+        ctaTitle: 'Start managing your<br/>money today',
+        ctaDesc: 'Join thousands of people who are taking control of their finances with Fedha. Your 7-day free trial is waiting.',
+        ctaBtn: 'Get Started Free',
+        ctaSub: 'No credit card required · Cancel anytime',
+        footerCopy: '© 2026 Fedha. All rights reserved. Built with ❤ in Tanzania.'
+      },
+      sw: {
+        heroTag: 'Sasa inapatikana kwa kila mtu',
+        heroTitle: 'Dhibiti<br/><span class="highlight">Fedha</span> Yako',
+        heroDesc: 'Fuatilia mapato, simamia matumizi, tengeneza bajeti, kuza akiba, na fuatilia uwekezaji — yote katika jukwaa moja rahisi.',
+        startTrial: 'Anza Bure',
+        seeFeatures: 'Ona Vipengele',
+        stat1: 'Zana za Fedha', stat2: 'Salama na Faragha', stat3: 'Fikia Popote',
+        featTitle: 'Kila kitu unachohitaji<br/>kusimamia pesa zako',
+        featDesc: 'Fedha inakupa zana rahisi lakini zenye nguvu kuelewa fedha zako na kufanya maamuzi bora kila siku.',
+        howTitle: 'Anza kwa hatua 3 rahisi',
+        howDesc: 'Hakuna usanidi mgumu. Hakuna kupakua. Jisajili tu na uanze kusimamia pesa zako.',
+        step1t: 'Fungua Akaunti', step1d: 'Jisajili kwa jina na barua pepe yako. Inachukua sekunde 30 tu. Data yako ni salama.',
+        step2t: 'Ongeza Fedha Zako', step2d: 'Ingiza mapato, matumizi, bajeti, malengo ya akiba, na uwekezaji. Dashibodi inasasishwa moja kwa moja.',
+        step3t: 'Tazama Pesa Zako Zikua', step3d: 'Tumia ripoti na tahadhari kukaa kwenye njia. Fanya maamuzi bora na ufikie malengo yako haraka.',
+        testTitle: 'Inapendwa na watu kama wewe',
+        pricingTitle: 'Bei rahisi na nafuu',
+        pricingDesc: 'Mpango mmoja na kila kitu unachohitaji. Anza na jaribio la bure la siku 7 — hakuna malipo yanayohitajika.',
+        pricingBtn: 'Anza Jaribio la Bure la Siku 7',
+        pricingPay: 'Lipa kwa M-Pesa, Tigo Pesa, Visa, Mastercard, au Benki',
+        faqTitle: 'Maswali yanayoulizwa sana',
+        ctaTitle: 'Anza kusimamia<br/>pesa zako leo',
+        ctaDesc: 'Jiunge na maelfu ya watu wanaodhibiti fedha zao kwa Fedha. Jaribio lako la bure la siku 7 linakungoja.',
+        ctaBtn: 'Anza Bure',
+        ctaSub: 'Hakuna kadi inayohitajika · Sitisha wakati wowote',
+        footerCopy: '© 2026 Fedha. Haki zote zimehifadhiwa. Imetengenezwa kwa ❤ Tanzania.'
+      },
+      fr: {
+        heroTag: 'Disponible pour tout le monde',
+        heroTitle: 'Prenez le Contrôle de<br/>Votre <span class="highlight">Argent</span>',
+        heroDesc: "Suivez vos revenus, gérez vos dépenses, établissez des budgets, faites croître votre épargne et surveillez vos investissements — le tout sur une seule plateforme.",
+        startTrial: 'Essai Gratuit',
+        seeFeatures: 'Voir les Fonctionnalités',
+        stat1: 'Outils Financiers', stat2: 'Sécurisé et Privé', stat3: 'Accès Partout',
+        featTitle: 'Tout ce dont vous avez besoin pour<br/>gérer votre argent',
+        featDesc: 'Fedha vous offre des outils puissants mais simples pour comprendre vos finances et prendre de meilleures décisions.',
+        howTitle: 'Commencez en 3 étapes simples',
+        howDesc: "Pas de configuration compliquée. Pas de téléchargement. Inscrivez-vous et commencez à gérer votre argent.",
+        step1t: 'Créez Votre Compte', step1d: "Inscrivez-vous avec votre nom et e-mail. Cela prend moins de 30 secondes. Vos données sont privées et sécurisées.",
+        step2t: 'Ajoutez Vos Finances', step2d: "Entrez vos revenus, dépenses, budget, objectifs d'épargne et investissements. Le tableau de bord se met à jour automatiquement.",
+        step3t: 'Regardez Votre Argent Croître', step3d: 'Utilisez les rapports et alertes pour rester sur la bonne voie. Prenez de meilleures décisions financières.',
+        testTitle: 'Apprécié par des gens comme vous',
+        pricingTitle: 'Tarification simple et abordable',
+        pricingDesc: "Un seul plan avec tout ce dont vous avez besoin. Commencez avec un essai gratuit de 7 jours.",
+        pricingBtn: 'Essai Gratuit de 7 Jours',
+        pricingPay: 'Payez par M-Pesa, Tigo Pesa, Visa, Mastercard ou Virement',
+        faqTitle: 'Questions fréquentes',
+        ctaTitle: 'Commencez à gérer<br/>votre argent aujourd\'hui',
+        ctaDesc: "Rejoignez des milliers de personnes qui prennent le contrôle de leurs finances avec Fedha. Votre essai gratuit de 7 jours vous attend.",
+        ctaBtn: 'Commencer Gratuitement',
+        ctaSub: 'Pas de carte requise · Annulez à tout moment',
+        footerCopy: '© 2026 Fedha. Tous droits réservés. Fait avec ❤ en Tanzanie.'
+      }
+    };
+
+    // Content element mapping
+    const contentMap = {
+      '.hero-badge span:last-child': 'heroTag',
+      '.hero h1': 'heroTitle',
+      '.hero p': 'heroDesc',
+      '.hero-buttons .btn-primary': 'startTrial',
+      '.hero-buttons .btn-secondary': 'seeFeatures',
+      '#features .section-title': 'featTitle',
+      '#features .section-desc': 'featDesc',
+      '#how-it-works .section-title': 'howTitle',
+      '#how-it-works .section-desc': 'howDesc',
+      '#pricing .section-title': 'pricingTitle',
+      '#pricing .section-desc': 'pricingDesc',
+      '.pricing-card .btn-primary': 'pricingBtn',
+      '.pricing-methods': 'pricingPay',
+      '#faq .section-title': 'faqTitle',
+      '.cta-box h2': 'ctaTitle',
+      '.cta-box p': 'ctaDesc',
+      '.cta-box .btn-primary': 'ctaBtn',
+      '.footer-copy': 'footerCopy',
+    };
+
+    function switchLang(lang) {
+      // Update nav links with data attributes
+      document.querySelectorAll('[data-' + lang + ']').forEach(el => {
+        el.textContent = el.getAttribute('data-' + lang);
+      });
+
+      // Update main content
+      const tr = translations[lang];
+      if (!tr) return;
+
+      Object.entries(contentMap).forEach(([sel, key]) => {
+        const el = document.querySelector(sel);
+        if (el && tr[key]) {
+          if (tr[key].includes('<')) el.innerHTML = tr[key];
+          else el.textContent = tr[key];
+        }
+      });
+
+      // Update step titles and descriptions
+      var steps = document.querySelectorAll('.step');
+      if (steps[0]) { steps[0].querySelector('h3').textContent = tr.step1t; steps[0].querySelector('p').textContent = tr.step1d; }
+      if (steps[1]) { steps[1].querySelector('h3').textContent = tr.step2t; steps[1].querySelector('p').textContent = tr.step2d; }
+      if (steps[2]) { steps[2].querySelector('h3').textContent = tr.step3t; steps[2].querySelector('p').textContent = tr.step3d; }
+
+      // Update hero stats
+      var stats = document.querySelectorAll('.hero-stat .label');
+      if (stats[0]) stats[0].textContent = tr.stat1;
+      if (stats[1]) stats[1].textContent = tr.stat2;
+      if (stats[2]) stats[2].textContent = tr.stat3;
+
+      // Update testimonials title
+      var testTitle = document.querySelector('section:nth-of-type(3) .section-title');
+      if (testTitle) testTitle.textContent = tr.testTitle;
+
+      // Update CTA sub text
+      var ctaSub = document.querySelector('.cta-box div:last-child');
+      if (ctaSub && tr.ctaSub) ctaSub.textContent = tr.ctaSub;
+
+      // Update button styles
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.background = 'transparent';
+        b.style.color = '#8892A8';
+      });
+      document.querySelectorAll('#btn-' + lang + ', .lang-btn').forEach(b => {
+        if (b.textContent.trim() === lang.toUpperCase()) {
+          b.classList.add('active');
+          b.style.background = '#00D4AA';
+          b.style.color = '#0B0E11';
+        }
+      });
+
+      localStorage.setItem('fedha_lang', lang);
+    }
+
+    // Auto-apply saved language
+    var savedLang = localStorage.getItem('fedha_lang');
+    if (savedLang && savedLang !== 'en') switchLang(savedLang);
+  </script>
+</body>
+</html>
