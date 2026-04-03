@@ -162,6 +162,8 @@
         target:<Fragment><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></Fragment>,
         download:<Fragment><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Fragment>,
         alert:<Fragment><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Fragment>,
+        loans:<Fragment><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></Fragment>,
+        trending:<Fragment><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></Fragment>,
       };
       return(<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icons[name]||null}</svg>);
     };
@@ -499,35 +501,249 @@
       </div>);
     };
 
-    // ─── REPORTS PAGE ───────────────────────────────────────────
+    // ─── REPORTS PAGE (Enhanced with Trends) ──────────────────
     const ReportsPage=({data,cur})=>{
       const cm=curMonth();
-      const months=[];
-      for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const m=d.toISOString().slice(0,7);
+      // Last 12 months data
+      const months12=[];
+      for(let i=11;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const m=d.toISOString().slice(0,7);
         const inc=data.incomes.filter(x=>x.date&&x.date.startsWith(m)).reduce((s,x)=>s+Number(x.amount),0);
         const exp=data.expenses.filter(x=>x.date&&x.date.startsWith(m)).reduce((s,x)=>s+Number(x.amount),0);
-        months.push({month:m,label:d.toLocaleDateString("en-US",{month:"short"}),income:inc,expense:exp});
+        months12.push({month:m,label:d.toLocaleDateString("en-US",{month:"short"}),income:inc,expense:exp,net:inc-exp});
       }
-      const maxVal=Math.max(...months.map(m=>Math.max(m.income,m.expense)),1);
+      const months6=months12.slice(6);
+      const maxVal=Math.max(...months6.map(m=>Math.max(m.income,m.expense)),1);
+
+      // Expense trends - monthly totals for line chart
+      const expMax=Math.max(...months12.map(m=>m.expense),1);
+      const incMax=Math.max(...months12.map(m=>m.income),1);
+
+      // Category breakdown
       const catSpend={};data.expenses.filter(e=>e.date&&e.date.startsWith(cm)).forEach(e=>{catSpend[e.category]=(catSpend[e.category]||0)+Number(e.amount);});
       const catEntries=Object.entries(catSpend).sort((a,b)=>b[1]-a[1]);
       const totalExp=catEntries.reduce((s,[,v])=>s+v,0);
       const srcIncome={};data.incomes.filter(i=>i.date&&i.date.startsWith(cm)).forEach(i=>{srcIncome[i.source]=(srcIncome[i.source]||0)+Number(i.amount);});
       const srcEntries=Object.entries(srcIncome).sort((a,b)=>b[1]-a[1]);
       const colors=[C.accent,C.blue,C.orange,C.purple,C.warn,"#FF87B2","#67E8F9","#A3E635"];
+
+      // Trend line renderer
+      const TrendLine=({data:tdata,color,maxV,height=100,label})=>{
+        if(!tdata.length) return null;
+        const w=100;const h=height;const pad=4;
+        const pts=tdata.map((v,i)=>{const x=pad+(i/(tdata.length-1))*(w-pad*2);const y=h-pad-(v/maxV)*(h-pad*2);return{x,y,v};});
+        const pathD=pts.map((p,i)=>((i===0?"M":"L")+p.x+","+p.y)).join(" ");
+        const areaD=pathD+" L"+pts[pts.length-1].x+","+(h-pad)+" L"+pts[0].x+","+(h-pad)+" Z";
+        return(<div>
+          <svg width="100%" height={h} viewBox={"0 0 "+w+" "+h} preserveAspectRatio="none">
+            <defs><linearGradient id={"grad-"+label} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.3"/><stop offset="100%" stopColor={color} stopOpacity="0.02"/></linearGradient></defs>
+            <path d={areaD} fill={"url(#grad-"+label+")"} />
+            <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            {pts.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={1.5} fill={color}/>)}
+          </svg>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+            {tdata.map((_,i)=>{if(i%2===0||i===tdata.length-1) return <span key={i} style={{fontSize:9,color:C.textDim}}>{months12[i]?.label}</span>; return <span key={i}></span>;})}
+          </div>
+        </div>);
+      };
+
       return(<div>
         <h2 style={{margin:"0 0 24px",fontSize:22,color:C.text}}>Reports & Analysis</h2>
+
+        {/* Income vs Expenses bar chart */}
         <Card style={{marginBottom:20}}>
           <div style={{fontSize:13,color:C.textMuted,fontWeight:600,marginBottom:16}}>Income vs Expenses (Last 6 Months)</div>
           <div style={{display:"flex",alignItems:"flex-end",gap:6,height:140}}>
-            {months.map(m=><div key={m.month} style={{flex:1,textAlign:"center"}}><div style={{display:"flex",gap:2,justifyContent:"center",alignItems:"flex-end",height:110}}><div style={{width:"40%",background:C.accent,borderRadius:"4px 4px 0 0",height:(m.income/maxVal)*110+"px",minHeight:2,opacity:0.8}}/><div style={{width:"40%",background:C.warn,borderRadius:"4px 4px 0 0",height:(m.expense/maxVal)*110+"px",minHeight:2,opacity:0.8}}/></div><div style={{fontSize:11,color:C.textDim,marginTop:6}}>{m.label}</div></div>)}
+            {months6.map(m=><div key={m.month} style={{flex:1,textAlign:"center"}}><div style={{display:"flex",gap:2,justifyContent:"center",alignItems:"flex-end",height:110}}><div style={{width:"40%",background:C.accent,borderRadius:"4px 4px 0 0",height:(m.income/maxVal)*110+"px",minHeight:2,opacity:0.8}}/><div style={{width:"40%",background:C.warn,borderRadius:"4px 4px 0 0",height:(m.expense/maxVal)*110+"px",minHeight:2,opacity:0.8}}/></div><div style={{fontSize:11,color:C.textDim,marginTop:6}}>{m.label}</div></div>)}
           </div>
           <div style={{display:"flex",gap:16,justifyContent:"center",marginTop:14}}><span style={{fontSize:12,color:C.accent,display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,background:C.accent,borderRadius:2,display:"inline-block"}}/> Income</span><span style={{fontSize:12,color:C.warn,display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,background:C.warn,borderRadius:2,display:"inline-block"}}/> Expenses</span></div>
         </Card>
+
+        {/* Trend lines */}
+        <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:20}}>
+          <Card style={{flex:"1 1 300px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:13,color:C.textMuted,fontWeight:600}}>Monthly Expense Trend (12 Months)</div>
+              <Icon name="trending" size={16} color={C.warn}/>
+            </div>
+            <TrendLine data={months12.map(m=>m.expense)} color={C.warn} maxV={expMax} label="exp"/>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:12}}>
+              <span style={{color:C.textMuted}}>Avg: <span style={{color:C.warn,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(months12.reduce((s,m)=>s+m.expense,0)/12)}</span></span>
+              <span style={{color:C.textMuted}}>This month: <span style={{color:C.warn,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(months12[11]?.expense||0)}</span></span>
+            </div>
+          </Card>
+          <Card style={{flex:"1 1 300px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:13,color:C.textMuted,fontWeight:600}}>Monthly Income Trend (12 Months)</div>
+              <Icon name="trending" size={16} color={C.accent}/>
+            </div>
+            <TrendLine data={months12.map(m=>m.income)} color={C.accent} maxV={incMax} label="inc"/>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:12}}>
+              <span style={{color:C.textMuted}}>Avg: <span style={{color:C.accent,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(months12.reduce((s,m)=>s+m.income,0)/12)}</span></span>
+              <span style={{color:C.textMuted}}>This month: <span style={{color:C.accent,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(months12[11]?.income||0)}</span></span>
+            </div>
+          </Card>
+        </div>
+
+        {/* Net savings trend */}
+        <Card style={{marginBottom:20}}>
+          <div style={{fontSize:13,color:C.textMuted,fontWeight:600,marginBottom:14}}>Net Savings Trend (Income - Expenses)</div>
+          <div style={{display:"flex",alignItems:"flex-end",gap:4,height:80}}>
+            {months12.map((m,i)=>{
+              const maxNet=Math.max(...months12.map(x=>Math.abs(x.net)),1);
+              const h=Math.abs(m.net)/maxNet*60;
+              return(<div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:70}}>
+                <div style={{width:"60%",height:h+"px",minHeight:2,background:m.net>=0?C.accent:C.warn,borderRadius:"3px 3px 0 0",opacity:0.8}}/>
+                <div style={{fontSize:8,color:C.textDim,marginTop:4}}>{m.label}</div>
+              </div>);
+            })}
+          </div>
+          <div style={{display:"flex",gap:16,justifyContent:"center",marginTop:10}}>
+            <span style={{fontSize:12,color:C.accent,display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,background:C.accent,borderRadius:2,display:"inline-block"}}/> Positive (saved)</span>
+            <span style={{fontSize:12,color:C.warn,display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,background:C.warn,borderRadius:2,display:"inline-block"}}/> Negative (deficit)</span>
+          </div>
+        </Card>
+
+        {/* Category breakdown and income by source */}
         <div style={{display:"flex",flexWrap:"wrap",gap:14}}>
           <Card style={{flex:"1 1 300px"}}><div style={{fontSize:13,color:C.textMuted,fontWeight:600,marginBottom:16}}>Expense Breakdown</div>{catEntries.length===0?<div style={{color:C.textDim,fontSize:13}}>No data</div>:<Fragment><div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:16}}>{catEntries.map(([cat,amt],i)=><div key={cat} style={{height:8,borderRadius:4,width:Math.max((amt/totalExp)*100,3)+"%",background:colors[i%colors.length]}}/>)}</div>{catEntries.map(([cat,amt],i)=><div key={cat} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid "+C.border}}><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{width:10,height:10,borderRadius:3,background:colors[i%colors.length],display:"inline-block"}}/><span style={{fontSize:13,color:C.text}}>{cat}</span></div><div><span style={{fontSize:13,color:C.text,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(amt)}</span><span style={{fontSize:11,color:C.textDim,marginLeft:8}}>{Math.round((amt/totalExp)*100)}%</span></div></div>)}</Fragment>}</Card>
           <Card style={{flex:"1 1 300px"}}><div style={{fontSize:13,color:C.textMuted,fontWeight:600,marginBottom:16}}>Income by Source</div>{srcEntries.length===0?<div style={{color:C.textDim,fontSize:13}}>No data</div>:srcEntries.map(([src,amt],i)=><div key={src} style={{marginBottom:12}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}><span style={{color:C.text}}>{src}</span><span style={{color:C.accent,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(amt)}</span></div><ProgressBar value={amt} max={srcEntries[0][1]} color={colors[i%colors.length]}/></div>)}</Card>
         </div>
+      </div>);
+    };
+
+    // ─── LOANS & DEBTS PAGE ─────────────────────────────────────
+    const LoansPage=({data,userId,reload,cur})=>{
+      const [modal,setModal]=useState(false);
+      const [payModal,setPayModal]=useState(null);
+      const [payAmt,setPayAmt]=useState("");
+      const [form,setForm]=useState({type:"borrowed",name:"",amount:"",lender_borrower:"",date:todayStr(),due_date:"",interest_rate:"",notes:""});
+      const [saving,setSaving]=useState(false);
+      const [filter,setFilter]=useState("all");
+
+      const add=async()=>{
+        if(!form.name||!form.amount) return;
+        setSaving(true);
+        try{await db.insert('loans',{user_id:userId,type:form.type,name:form.name,amount:Number(form.amount),paid:0,lender_borrower:form.lender_borrower,date:form.date,due_date:form.due_date||null,interest_rate:Number(form.interest_rate)||0,notes:form.notes,status:'active'});await reload();setModal(false);setForm({type:"borrowed",name:"",amount:"",lender_borrower:"",date:todayStr(),due_date:"",interest_rate:"",notes:""});}catch(e){alert(e.message);}
+        setSaving(false);
+      };
+
+      const makePayment=async(loanId)=>{
+        if(!payAmt) return;
+        const loan=data.loans.find(l=>l.id===loanId);
+        if(!loan) return;
+        const newPaid=Number(loan.paid)+Number(payAmt);
+        const newStatus=newPaid>=Number(loan.amount)?'paid':'active';
+        try{await db.update('loans',loanId,{paid:newPaid,status:newStatus});await reload();setPayModal(null);setPayAmt("");}catch(e){alert(e.message);}
+      };
+
+      const del=async(id)=>{try{await db.delete('loans',id);await reload();}catch(e){alert(e.message);}};
+
+      const loans=data.loans||[];
+      const filtered=filter==="all"?loans:loans.filter(l=>l.type===filter);
+      const sorted=[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+      const totalBorrowed=loans.filter(l=>l.type==="borrowed").reduce((s,l)=>s+Number(l.amount),0);
+      const totalBorrowedPaid=loans.filter(l=>l.type==="borrowed").reduce((s,l)=>s+Number(l.paid),0);
+      const totalLent=loans.filter(l=>l.type==="lent").reduce((s,l)=>s+Number(l.amount),0);
+      const totalLentPaid=loans.filter(l=>l.type==="lent").reduce((s,l)=>s+Number(l.paid),0);
+      const activeBorrowed=loans.filter(l=>l.type==="borrowed"&&l.status==="active").length;
+      const activeLent=loans.filter(l=>l.type==="lent"&&l.status==="active").length;
+
+      return(<div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexWrap:"wrap",gap:12}}>
+          <div><h2 style={{margin:0,fontSize:22,color:C.text}}>Loans & Debts</h2></div>
+          <Btn onClick={()=>setModal(true)}><span style={{display:"flex",alignItems:"center",gap:6}}><Icon name="plus" size={16} color="#0B0E11"/> Add Loan</span></Btn>
+        </div>
+
+        {/* Summary cards */}
+        <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:20}}>
+          <Card style={{flex:"1 1 200px"}}>
+            <div style={{fontSize:12,color:C.textMuted,marginBottom:6,fontWeight:500}}>I Owe (Borrowed)</div>
+            <div style={{fontSize:22,fontWeight:700,color:C.warn,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(totalBorrowed-totalBorrowedPaid)}</div>
+            <div style={{fontSize:12,color:C.textDim,marginTop:4}}>{activeBorrowed} active loan{activeBorrowed!==1?"s":""}</div>
+            {totalBorrowed>0&&<div style={{marginTop:8}}><ProgressBar value={totalBorrowedPaid} max={totalBorrowed} color={C.accent} height={6}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>{cur} {fmt(totalBorrowedPaid)} of {cur} {fmt(totalBorrowed)} repaid</div></div>}
+          </Card>
+          <Card style={{flex:"1 1 200px"}}>
+            <div style={{fontSize:12,color:C.textMuted,marginBottom:6,fontWeight:500}}>Owed to Me (Lent)</div>
+            <div style={{fontSize:22,fontWeight:700,color:C.blue,fontFamily:"'Space Mono',monospace"}}>{cur} {fmt(totalLent-totalLentPaid)}</div>
+            <div style={{fontSize:12,color:C.textDim,marginTop:4}}>{activeLent} active loan{activeLent!==1?"s":""}</div>
+            {totalLent>0&&<div style={{marginTop:8}}><ProgressBar value={totalLentPaid} max={totalLent} color={C.blue} height={6}/><div style={{fontSize:11,color:C.textDim,marginTop:4}}>{cur} {fmt(totalLentPaid)} of {cur} {fmt(totalLent)} recovered</div></div>}
+          </Card>
+        </div>
+
+        {/* Filter */}
+        <div style={{display:"flex",gap:8,marginBottom:20}}>
+          {[["all","All"],["borrowed","I Borrowed"],["lent","I Lent"]].map(([val,lbl])=>(
+            <button key={val} onClick={()=>setFilter(val)} style={{...btnBase,padding:"8px 16px",fontSize:13,background:filter===val?C.accentDim:"transparent",color:filter===val?C.accent:C.textMuted,border:"1px solid "+(filter===val?C.accent+"40":C.border),borderRadius:20}}>{lbl}</button>
+          ))}
+        </div>
+
+        {/* Loans list */}
+        {sorted.length===0?<EmptyState icon="loans" message="No loans or debts recorded" action="Add Loan" onAction={()=>setModal(true)}/>:(
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:14}}>
+            {sorted.map(loan=>{
+              const remaining=Math.max(0,Number(loan.amount)-Number(loan.paid));
+              const pct=Number(loan.amount)>0?Math.round((Number(loan.paid)/Number(loan.amount))*100):0;
+              const isPaid=loan.status==="paid";
+              const isOverdue=loan.due_date&&new Date(loan.due_date)<new Date()&&!isPaid;
+              return(<Card key={loan.id} style={{opacity:isPaid?0.7:1}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                  <div>
+                    <span style={{fontSize:11,padding:"2px 10px",borderRadius:20,fontWeight:600,background:loan.type==="borrowed"?C.warnDim:C.blueDim,color:loan.type==="borrowed"?C.warn:C.blue}}>{loan.type==="borrowed"?"I Borrowed":"I Lent"}</span>
+                    {isPaid&&<span style={{fontSize:11,padding:"2px 10px",borderRadius:20,fontWeight:600,background:C.accentDim,color:C.accent,marginLeft:6}}>Paid</span>}
+                    {isOverdue&&<span style={{fontSize:11,padding:"2px 10px",borderRadius:20,fontWeight:600,background:C.warnDim,color:C.warn,marginLeft:6}}>Overdue</span>}
+                    <div style={{fontSize:16,fontWeight:700,color:C.text,marginTop:8}}>{loan.name}</div>
+                    {loan.lender_borrower&&<div style={{fontSize:12,color:C.textDim,marginTop:2}}>{loan.type==="borrowed"?"From":"To"}: {loan.lender_borrower}</div>}
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    {!isPaid&&<button onClick={()=>{setPayModal(loan.id);setPayAmt("");}} style={{background:C.accentDim,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer"}}><Icon name="plus" size={14} color={C.accent}/></button>}
+                    <button onClick={()=>del(loan.id)} style={{background:C.warnDim,border:"none",borderRadius:8,padding:"6px 10px",cursor:"pointer"}}><Icon name="trash" size={14} color={C.warn}/></button>
+                  </div>
+                </div>
+                <div style={{margin:"14px 0 8px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:6}}>
+                    <span style={{color:C.text,fontFamily:"'Space Mono',monospace",fontWeight:600}}>{cur} {fmt(loan.amount)}</span>
+                    <span style={{color:isPaid?C.accent:C.textMuted}}>{pct}% repaid</span>
+                  </div>
+                  <ProgressBar value={Number(loan.paid)} max={Number(loan.amount)} color={isPaid?C.accent:loan.type==="borrowed"?C.orange:C.blue} height={8}/>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.textDim}}>
+                  <span>Paid: {cur} {fmt(loan.paid)}</span>
+                  <span>Remaining: {cur} {fmt(remaining)}</span>
+                </div>
+                <div style={{display:"flex",gap:12,marginTop:8,fontSize:12,color:C.textDim}}>
+                  <span>Date: {loan.date?fmtDate(loan.date):"-"}</span>
+                  {loan.due_date&&<span style={{color:isOverdue?C.warn:C.textDim}}>Due: {fmtDate(loan.due_date)}</span>}
+                  {Number(loan.interest_rate)>0&&<span>Rate: {loan.interest_rate}%</span>}
+                </div>
+                {loan.notes&&<div style={{fontSize:12,color:C.textDim,marginTop:8,paddingTop:8,borderTop:"1px solid "+C.border}}>{loan.notes}</div>}
+              </Card>);
+            })}
+          </div>
+        )}
+
+        {/* Add loan modal */}
+        <Modal open={modal} onClose={()=>setModal(false)} title="Add Loan / Debt">
+          <div style={{display:"flex",gap:8,marginBottom:14}}>
+            {[["borrowed","I Borrowed"],["lent","I Lent Out"]].map(([val,lbl])=>(
+              <button key={val} onClick={()=>setForm({...form,type:val})} style={{...btnBase,flex:1,padding:"10px 0",fontSize:14,background:form.type===val?(val==="borrowed"?C.warnDim:C.blueDim):"transparent",color:form.type===val?(val==="borrowed"?C.warn:C.blue):C.textMuted,border:"1px solid "+(form.type===val?(val==="borrowed"?C.warn:C.blue)+"40":C.border)}}>{lbl}</button>
+            ))}
+          </div>
+          <Input label="Loan Name / Purpose" value={form.name} onChange={v=>setForm({...form,name:v})} placeholder="e.g. School fees loan"/>
+          <Input label="Total Amount" type="number" value={form.amount} onChange={v=>setForm({...form,amount:v})} placeholder="0"/>
+          <Input label={form.type==="borrowed"?"Borrowed From":"Lent To"} value={form.lender_borrower} onChange={v=>setForm({...form,lender_borrower:v})} placeholder="Person or institution name"/>
+          <Input label="Date" type="date" value={form.date} onChange={v=>setForm({...form,date:v})}/>
+          <Input label="Due Date (optional)" type="date" value={form.due_date} onChange={v=>setForm({...form,due_date:v})}/>
+          <Input label="Interest Rate % (optional)" type="number" value={form.interest_rate} onChange={v=>setForm({...form,interest_rate:v})} placeholder="0"/>
+          <Input label="Notes" value={form.notes} onChange={v=>setForm({...form,notes:v})} type="textarea" placeholder="Optional..."/>
+          <Btn onClick={add} disabled={saving} style={{width:"100%"}}>{saving?"Saving...":"Save Loan"}</Btn>
+        </Modal>
+
+        {/* Payment modal */}
+        <Modal open={!!payModal} onClose={()=>setPayModal(null)} title="Record Payment" width={360}>
+          <Input label="Payment Amount" type="number" value={payAmt} onChange={setPayAmt} placeholder="0"/>
+          <Btn onClick={()=>makePayment(payModal)} style={{width:"100%"}}>Record Payment</Btn>
+        </Modal>
       </div>);
     };
 
@@ -664,6 +880,7 @@
       {id:"budget",label:"Budget",icon:"budget"},
       {id:"savings",label:"Savings",icon:"savings"},
       {id:"investments",label:"Investments",icon:"invest"},
+      {id:"loans",label:"Loans & Debts",icon:"loans"},
       {id:"reports",label:"Reports",icon:"reports"},
       {id:"profile",label:"Profile",icon:"profile"},
     ];
@@ -673,7 +890,7 @@
       const [profile,setProfile]=useState(null);
       const [subscription,setSubscription]=useState(null);
       const [showPayment,setShowPayment]=useState(false);
-      const [data,setData]=useState({incomes:[],expenses:[],budgets:[],savings_goals:[],investments:[],notifications:[]});
+      const [data,setData]=useState({incomes:[],expenses:[],budgets:[],savings_goals:[],investments:[],loans:[],notifications:[]});
       const [page,setPage]=useState("dashboard");
       const [loading,setLoading]=useState(true);
       const [sidebarOpen,setSidebarOpen]=useState(false);
@@ -686,7 +903,7 @@
 
       const loadAllData=useCallback(async(uid)=>{
         try{
-          const [prof,sub,incomes,expenses,budgets,savings_goals,investments,notifications]=await Promise.all([
+          const [prof,sub,incomes,expenses,budgets,savings_goals,investments,loans,notifications]=await Promise.all([
             db.getProfile(uid),
             db.getSubscription(uid),
             db.getAll('incomes',uid),
@@ -694,11 +911,12 @@
             db.getAll('budgets',uid),
             db.getAll('savings_goals',uid),
             db.getAll('investments',uid),
+            db.getAll('loans',uid),
             db.getAll('notifications',uid),
           ]);
           setProfile(prof||{name:"",email:"",currency:"TZS"});
           setSubscription(sub);
-          setData({incomes,expenses,budgets,savings_goals,investments,notifications});
+          setData({incomes,expenses,budgets,savings_goals,investments,loans,notifications});
 
           // Check subscription status
           if(sub){
@@ -726,7 +944,7 @@
       useEffect(()=>{
         const {data:{subscription}}=supabase.auth.onAuthStateChange(async(event,session)=>{
           if(event==='SIGNED_IN'&&session?.user){setUser(session.user);await loadAllData(session.user.id);setLoading(false);}
-          else if(event==='SIGNED_OUT'){setUser(null);setProfile(null);setData({incomes:[],expenses:[],budgets:[],savings_goals:[],investments:[],notifications:[]});setLoading(false);}
+          else if(event==='SIGNED_OUT'){setUser(null);setProfile(null);setData({incomes:[],expenses:[],budgets:[],savings_goals:[],investments:[],loans:[],notifications:[]});setLoading(false);}
         });
         return()=>subscription.unsubscribe();
       },[loadAllData]);
@@ -748,6 +966,7 @@
           case "budget": return <BudgetPage data={data} userId={user.id} reload={reload} cur={cur}/>;
           case "savings": return <SavingsPage data={data} userId={user.id} reload={reload} cur={cur}/>;
           case "investments": return <InvestmentPage data={data} userId={user.id} reload={reload} cur={cur}/>;
+          case "loans": return <LoansPage data={data} userId={user.id} reload={reload} cur={cur}/>;
           case "reports": return <ReportsPage data={data} cur={cur}/>;
           case "profile": return <ProfilePage profile={profile} userId={user.id} reload={reload} onLogout={()=>{setUser(null);setProfile(null);}}/>;
           default: return <DashboardPage data={data} profile={profile} cur={cur}/>;
